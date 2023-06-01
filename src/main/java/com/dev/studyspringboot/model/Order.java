@@ -38,10 +38,12 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @OneToMany(mappedBy = "order")
+    @ManyToOne
+    @JoinColumn(name = "shipper_id")
+    @Nullable
+    private User shipper;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<OrderProduct> orderProducts;
-    @OneToMany(mappedBy = "order")
-    private List<Transport> transports;
 
     @PrePersist
     public void prePersist() {

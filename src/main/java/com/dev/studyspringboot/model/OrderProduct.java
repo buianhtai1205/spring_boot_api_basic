@@ -2,6 +2,7 @@ package com.dev.studyspringboot.model;
 
 
 import com.dev.studyspringboot.util.enums.ReceiveStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,9 +19,11 @@ public class OrderProduct {
     @Enumerated(EnumType.STRING)
     private ReceiveStatus receiveStatus = ReceiveStatus.NOT_RECEIVED;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
+
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;

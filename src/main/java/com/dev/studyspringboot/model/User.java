@@ -44,9 +44,6 @@ public class User {
     @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Order> orders;
-    @JsonIgnore
-    @OneToMany(mappedBy = "user")
-    private List<Transport> transports;
 
     @PrePersist
     public void prePersist() {
