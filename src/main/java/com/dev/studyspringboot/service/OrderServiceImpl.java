@@ -62,7 +62,6 @@ public class OrderServiceImpl implements IOrderService{
             } else throw new ResourceNotFoundException("Order has id: " + orderId + " NOT exist!");
 
         } else throw new NullException("Order is null value!");
-
     }
 
     @Transactional
