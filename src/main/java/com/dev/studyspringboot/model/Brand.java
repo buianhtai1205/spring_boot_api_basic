@@ -1,13 +1,10 @@
 package com.dev.studyspringboot.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,6 +24,7 @@ public class Brand {
     private String address;
     private String imageUrl;
     private LocalDateTime createdAt;
+    @Nullable
     private LocalDateTime updatedAt;
     @Nullable
     private LocalDateTime deletedAt;
@@ -40,8 +38,10 @@ public class Brand {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now();
-        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

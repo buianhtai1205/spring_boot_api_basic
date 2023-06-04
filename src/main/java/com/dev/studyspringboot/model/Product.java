@@ -57,7 +57,6 @@ public class Product {
     @ManyToOne()
     @JoinColumn(name = "brand_id")
     private Brand brand;
-
     @JsonIgnore
     @OneToMany(mappedBy = "product")
     private List<OrderProduct> orderProducts;
@@ -69,8 +68,10 @@ public class Product {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now();
-        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }
