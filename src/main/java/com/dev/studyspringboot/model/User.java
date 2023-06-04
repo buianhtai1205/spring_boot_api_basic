@@ -1,13 +1,14 @@
 package com.dev.studyspringboot.model;
 
-import com.dev.studyspringboot.util.enums.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -34,22 +35,19 @@ public class User {
     private String phoneNumber;
     @Nullable
     private String imageUrl;
-    @Enumerated(EnumType.STRING)
-    private Role role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     @Nullable
     private LocalDateTime deletedAt;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<UserRole> userRoles = new HashSet<>();
     @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Order> orders;
 
     @PrePersist
     public void prePersist() {
-        if (role == null) {
-            role = Role.USER;
-        }
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
