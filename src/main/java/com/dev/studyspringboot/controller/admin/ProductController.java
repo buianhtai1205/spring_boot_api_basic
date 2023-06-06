@@ -1,4 +1,4 @@
-package com.dev.studyspringboot.controller;
+package com.dev.studyspringboot.controller.admin;
 
 import com.dev.studyspringboot.model.Product;
 import com.dev.studyspringboot.service.IProductService;
@@ -11,10 +11,35 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/admin/product")
 public class ProductController {
     @Autowired
     private IProductService iProductService;
+
+    @PostMapping("/create")
+    public ResponseEntity<String> addProduct(
+            @Validated @RequestBody Product product )
+    {
+        iProductService.addProduct(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Product created successfully");
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> updateProduct(
+            @PathVariable("id") Long productId,
+            @RequestBody Product product )
+    {
+        iProductService.updateProduct(productId, product);
+        return ResponseEntity.status(HttpStatus.OK).body("Product updated successfully");
+    }
+
+    @PutMapping("/delete/{id}")
+    public ResponseEntity<String> deleteProduct(
+            @PathVariable("id") Long productId )
+    {
+        iProductService.deleteProduct(productId);
+        return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfully");
+    }
 
     @GetMapping("/")
     public ResponseEntity<List<Product>> getAllProduct()

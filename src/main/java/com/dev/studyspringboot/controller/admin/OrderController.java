@@ -1,4 +1,4 @@
-package com.dev.studyspringboot.controller;
+package com.dev.studyspringboot.controller.admin;
 
 import com.dev.studyspringboot.model.Order;
 import com.dev.studyspringboot.service.IOrderService;
@@ -10,17 +10,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/order")
+@RequestMapping("/admin/order")
 public class OrderController {
     @Autowired
     private IOrderService iOrderService;
 
-    @PostMapping("/create")
-    public ResponseEntity<String> addOrder(
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> updateOrder(
+            @PathVariable("id") Long orderId,
             @RequestBody Order order )
     {
-        iOrderService.addOrder(order);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Order created successfully");
+        iOrderService.updateOrder(orderId, order);
+        return ResponseEntity.status(HttpStatus.OK).body("Order updated successfully");
     }
 
     @DeleteMapping("/delete/{id}")

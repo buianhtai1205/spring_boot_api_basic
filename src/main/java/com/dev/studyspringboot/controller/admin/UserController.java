@@ -1,4 +1,4 @@
-package com.dev.studyspringboot.controller;
+package com.dev.studyspringboot.controller.admin;
 
 import com.dev.studyspringboot.model.User;
 import com.dev.studyspringboot.service.IUserService;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/admin/user")
 public class UserController {
     @Autowired
     private IUserService iUserService;
@@ -39,6 +39,13 @@ public class UserController {
     {
         iUserService.deleteUser(userId);
         return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully");
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<List<User>> getAllUser()
+    {
+        List<User> users = iUserService.getAllUser();
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @GetMapping("/show/{id}")

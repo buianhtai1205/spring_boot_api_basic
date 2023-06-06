@@ -16,31 +16,6 @@ public class BrandController {
     @Autowired
     private IBrandService iBrandService;
 
-    @PostMapping("/create")
-    public ResponseEntity<String> addBrand(
-            @Validated @RequestBody Brand brand )
-    {
-        iBrandService.addBrand(brand);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Brand created successfully");
-    }
-
-    @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateBrand(
-            @PathVariable("id") Long brandId,
-            @RequestBody Brand brand )
-    {
-        iBrandService.updateBrand(brandId, brand);
-        return ResponseEntity.status(HttpStatus.OK).body("Brand updated successfully");
-    }
-
-    @PutMapping("/delete/{id}")
-    public ResponseEntity<String> deleteBrand(
-            @PathVariable("id") Long brandId )
-    {
-        iBrandService.deleteBrand(brandId);
-        return ResponseEntity.status(HttpStatus.OK).body("Brand deleted successfully");
-    }
-
     @GetMapping("/")
     public ResponseEntity<List<Brand>> getAllBrand()
     {
