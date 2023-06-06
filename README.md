@@ -504,9 +504,84 @@ Demo api with Postman
 **getOne**
 ![img_5.png](images/img_5.png)
 
-
-
 ## Stage 2: Spring Security (Authentication, Authorization)
+Trong ứng dụng này ta đang dùng Spring Boot 3 và Spring Security 6 nên có
+khá nhiều thứ thay đổi.
+
+Từ phiên bản hiện tại `WebSecurityConfigAdapter` không còn được Spring Boot hổ
+trợ nữa.
+
+Đầu tiên ta thêm dependence vào pom.xml
+```
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+Đầu tiên ta tạo một class SecurityConfig trong package config.
+
+Tiếp theo ta sẽ hard code tạo hai user và xử lý authentication cơ bản để hiểu
+về authentication trước.
+```
+package com.dev.studyspringboot.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    @Bean
+    // authentication
+    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+        UserDetails admin = User.withUsername("admin")
+                .password(encoder.encode("admin"))
+                .roles("ADMIN")
+                .build();
+        UserDetails user = User.withUsername("user")
+                .password(encoder.encode("user"))
+                .roles("USER")
+                .build();
+        return new InMemoryUserDetailsManager(admin, user);
+    }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http.csrf().disable()
+                .authorizeHttpRequests()
+                .requestMatchers("/hello").permitAll() // với endpoint /hello thì sẽ được cho qua
+                .and()
+                .authorizeHttpRequests()
+                .requestMatchers("/user/**").authenticated() // với endpoint /customer/** sẽ yêu cầu authenticate
+                .and().formLogin() // trả về page login nếu chưa authenticate
+                .and().build();
+    }
+}
+```
+Ta run project để test, với /hello thì không cần login vẫn vào bình thường, còn 
+với các endpoint /user/** thì ta phải đăng nhập xác thực trước.
+
+**Tài liệu tham khảo: https://viblo.asia/p/phan-1-spring-boot-30-va-spring-security-60-GAWVpdBYV05**
+
+Tiếp theo ta sẽ phân quyền cho người dùng. Trước hết ta cần sữa lại controller
+chi tiết hơn. Ta có thể tạo package admin trong controller để lưu các controller
+xử lý bên admin. Tương tự với user, shipper.
+
+
 
 ## Stage 3: Handle Exception and Validation
 ### Exception basic
