@@ -43,8 +43,12 @@ public class SecurityConfig {
                 .requestMatchers("/hello").permitAll() // với endpoint /hello thì sẽ được cho qua
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/user/**").authenticated() // với endpoint /customer/** sẽ yêu cầu authenticate
+                .requestMatchers("api/admin/**").hasRole("ADMIN")
+                .and()
+                .authorizeHttpRequests()
+                .requestMatchers("api/**").hasRole("USER")
                 .and().formLogin() // trả về page login nếu chưa authenticate
+                .and().httpBasic()
                 .and().build();
     }
 }
