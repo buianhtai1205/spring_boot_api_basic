@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/brand")
-public class BrandController {
+@RequestMapping("/api/admin/brand")
+public class AdminBrandController {
     @Autowired
     private IBrandService iBrandService;
 

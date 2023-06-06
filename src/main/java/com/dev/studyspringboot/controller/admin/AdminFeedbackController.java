@@ -1,7 +1,6 @@
 package com.dev.studyspringboot.controller.admin;
 
 import com.dev.studyspringboot.model.Feedback;
-import com.dev.studyspringboot.model.OrderProduct;
 import com.dev.studyspringboot.service.IFeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,8 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/feedback")
-public class FeedbackController {
+@RequestMapping("/api/admin/feedback")
+public class AdminFeedbackController {
     @Autowired
     private IFeedbackService iFeedbackService;
 
