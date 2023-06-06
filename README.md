@@ -579,8 +579,35 @@ với các endpoint /user/** thì ta phải đăng nhập xác thực trước.
 
 Tiếp theo ta sẽ phân quyền cho người dùng. Trước hết ta cần sữa lại controller
 chi tiết hơn. Ta có thể tạo package admin trong controller để lưu các controller
-xử lý bên admin. Tương tự với user, shipper.
+xử lý bên admin.
 
+Sau khi tạo lại các api, thì ta tiến hành phân quyền trong SecurityConfig
+```
+@Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http.csrf().disable()
+                .authorizeHttpRequests()
+                .requestMatchers("/hello").permitAll() // với endpoint /hello thì sẽ được cho qua
+                .and()
+                .authorizeHttpRequests()
+                .requestMatchers("api/admin/**").hasRole("ADMIN")
+                .and()
+                .authorizeHttpRequests()
+                .requestMatchers("api/**").hasRole("USER")
+                .and().formLogin() // trả về page login nếu chưa authenticate
+                .and().httpBasic()
+                .and().build();
+    }
+```
+
+Với các api không cần xác thực login như `/hello` ta sẽ cho `permitAll()`.
+
+Với các api có url `/admin` ta sẽ config has role ADMIN. Ngoài ra là USER.
+
+Tuy nhiên đây chỉ là cơ bản về cách phân quyền, vì với user có các api như `/product/` , `/brand/`
+thì không cần phải xác thực mà vẫn truy cập được. Vì vậy nếu làm cách này thì code của chúng ta
+sẽ có thể rất dài nếu một trang web có 100 api trở lên. Tuy nhiên đối với các trang web đơn giản
+thì cách làm này mang lại hiệu quả cao hơn, dễ config dễ đọc.
 
 
 ## Stage 3: Handle Exception and Validation
