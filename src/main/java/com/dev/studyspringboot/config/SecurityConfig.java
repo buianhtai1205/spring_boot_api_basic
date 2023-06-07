@@ -16,7 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity()
 public class SecurityConfig {
     @Bean
     // authentication
@@ -39,15 +39,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable()
-                .authorizeHttpRequests()
-                .requestMatchers("/hello").permitAll() // với endpoint /hello thì sẽ được cho qua
-                .and()
-                .authorizeHttpRequests()
-                .requestMatchers("api/admin/**").hasRole("ADMIN")
-                .and()
-                .authorizeHttpRequests()
-                .requestMatchers("api/**").hasRole("USER")
-                .and().formLogin() // trả về page login nếu chưa authenticate
+                .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .formLogin() // trả về page login nếu chưa authenticate
                 .and().httpBasic()
                 .and().build();
     }

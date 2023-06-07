@@ -6,6 +6,7 @@ import com.dev.studyspringboot.service.IFeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class FeedbackController {
     }
 
     @PostMapping("/create")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> addFeedback(
             @RequestBody FeedbackAndOrderProduct feedbackAndOrderProduct )
     {
@@ -32,6 +34,7 @@ public class FeedbackController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> updateFeedback(
             @PathVariable("id") Long feedbackId,
             @RequestBody Feedback feedback )
@@ -41,6 +44,7 @@ public class FeedbackController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> deleteFeedback(
             @PathVariable("id") Long feedbackId )
     {
@@ -49,6 +53,7 @@ public class FeedbackController {
     }
 
     @GetMapping("/")
+    @PreAuthorize("permitAll")
     public ResponseEntity<List<Feedback>> getAllFeedback()
     {
         List<Feedback> feedbacks = iFeedbackService.getAllFeedback();
@@ -56,6 +61,7 @@ public class FeedbackController {
     }
 
     @GetMapping("/show/{id}")
+    @PreAuthorize("permitAll")
     public ResponseEntity<Feedback> getOneFeedback(
             @PathVariable("id") Long feedbackId )
     {
@@ -64,6 +70,7 @@ public class FeedbackController {
     }
 
     @GetMapping("/get/{id}")
+    @PreAuthorize("permitAll")
     public ResponseEntity<List<Feedback>> getAllFeedbackOfProduct(
             @PathVariable("id") Long productId )
     {

@@ -5,7 +5,7 @@ import com.dev.studyspringboot.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +16,7 @@ public class ProductController {
     @Autowired
     private IProductService iProductService;
 
+    @PreAuthorize("permitAll")
     @GetMapping("/")
     public ResponseEntity<List<Product>> getAllProduct()
     {
@@ -23,6 +24,7 @@ public class ProductController {
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
+    @PreAuthorize("permitAll")
     @GetMapping("/show/{id}")
     public ResponseEntity<Product> getOneProduct(
             @PathVariable("id") Long productId )

@@ -609,6 +609,119 @@ thì không cần phải xác thực mà vẫn truy cập được. Vì vậy n�
 sẽ có thể rất dài nếu một trang web có 100 api trở lên. Tuy nhiên đối với các trang web đơn giản
 thì cách làm này mang lại hiệu quả cao hơn, dễ config dễ đọc.
 
+Đối với cách khác thì trong SecurityConfig ta sẽ bỏ đoạn config cho role USER.
+
+Thay vào đó ta sẽ tự config role các api trong controller của user.
+
+Đầu tiên ta cần một annotation trong file config `@EnableMethodSecurity`.
+
+Các bạn cũng có thể đọc rõ hơn về phần này trên trang chủ của spring: https://docs.spring.io/spring-security/reference/servlet/authorization/method-security.html
+```
+@PreAuthorize("hasRole('USER')")
+```
+Ta có thể sử dụng annotation này ngày những api mà ta cần ROLE USER trong controller.
+Tương tự với admin.
+
+Các cách sử dụng `@PreAuthorize`:
+- `@PreAuthorize("permitAll")`: api truy cập không cần xác thực, không cần login,
+áp dụng cho các api như lấy danh sách sản phẩm, chi tiết sản phẩm, đăng ký, đăng
+nhập,...
+- `@PreAuthorize("denyAll")`: api chặn tất cả người dùng truy cập.
+- `@PreAuthorize("hasRole('ADMIN')")`: api cho phép ADMIN truy cập
+- `@PreAuthorize("hasAuthority('ROLE_ADMIN')")`: tương tự nhưng có prefix ROLE_ 
+trước role. Do được config mặc định như vậy, Khi sử dụng có thể
+Ctrl + Click vào để xem chi tiết
+- ...
+
+Tùy vào nhu cầu và các format quy ước chuẩn của dự án mà bạn có thể sử dụng
+các cách trên. 
+
+Ví dụ với project hiện tại: Admin chỉ có admin được phép truy 
+cập nên mình sẽ config admin theo cách 1, còn với user mình sẽ sử dụng cách
+2 vì trong user có nhiều api không cần xác thực vẫn có quyền truy cập.
+
+Đầu tiên ta sẽ permitAll tất cả các url /**. Sau đó config /api/admin/** với
+role ADMIN trên url. Còn với user như đã nói, ta sẽ dùng các annotation config
+trực tiếp trong các method
+
+```
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    return http.csrf().disable()
+            .authorizeHttpRequests((authorize) -> authorize
+                    .requestMatchers("/**").permitAll()
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .anyRequest().authenticated()
+            )
+            .formLogin() // trả về page login nếu chưa authenticate
+            .and().httpBasic()
+            .and().build();
+}
+```
+
+Trong UserController:
+```
+package com.dev.studyspringboot.controller;
+
+import com.dev.studyspringboot.model.User;
+import com.dev.studyspringboot.service.IUserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/user")
+public class UserController {
+    @Autowired
+    private IUserService iUserService;
+
+    @PreAuthorize("permitAll")
+    @PostMapping("/create")
+    public ResponseEntity<String> addUser(
+            @Validated @RequestBody User user )
+    {
+        iUserService.addUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> updateUser(
+            @PathVariable("id") Long userId,
+            @RequestBody User user )
+    {
+        iUserService.updateUser(userId, user);
+        return ResponseEntity.status(HttpStatus.OK).body("User updated successfully");
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping("/delete/{id}")
+    public ResponseEntity<String> deleteUser(
+            @PathVariable("id") Long userId )
+    {
+        iUserService.deleteUser(userId);
+        return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully");
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/show/{id}")
+    public ResponseEntity<User> getOneUser(
+            @PathVariable("id") Long userId )
+    {
+        User user = iUserService.getOneUser(userId);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+}
+```
+
+**Phần tiếp theo ta sẽ quay lại về authentication. Sau khi đã phân quyền mọi thứ
+ta cần sửa đổi phần hard code ta tạo sẵn lúc trước. Ta sẽ config để lấy account
+và roles trong database để xác thực vào hệ thống.**
+
+
 
 ## Stage 3: Handle Exception and Validation
 ### Exception basic
