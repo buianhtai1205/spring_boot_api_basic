@@ -1,10 +1,11 @@
 package com.dev.studyspringboot.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -21,7 +22,7 @@ public class Role {
     @Column(nullable = false, unique = true)
     private String roleName;
 
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<UserRole> userRoles = new HashSet<>();
-
+    @JsonIgnore
+    @OneToMany(mappedBy = "role")
+    private List<UserRole> userRoles = new ArrayList<>();
 }
