@@ -721,6 +721,184 @@ public class UserController {
 ta cần sửa đổi phần hard code ta tạo sẵn lúc trước. Ta sẽ config để lấy account
 và roles trong database để xác thực vào hệ thống.**
 
+Đầu tiên ta sẽ config lại một chút các model User, Role, UserRole để có thề thực hiện
+authentication. **Xem commit config model to authorization 08/06/2023**
+
+Đâu tiên ta thấy trong config của chúng ta đang sử dụng `UserDetailsService` mặc định
+của spring security. Ta sẽ tạo một class `CustomUserDetailsService` implements `UserDetailsService`.
+
+Ta sẽ return class ta tạo trong config của ta. 
+```
+// authentication
+@Bean
+public UserDetailsService userDetailsService() {
+    return new CustomUserDetailService();
+}
+```
+
+Tiếp đến ta tiến hành override lại các method của `UserDetailsService` trong `CustomUserDetailsService`
+và tiến hành sửa đổi theo database của ta.
+```
+package com.dev.studyspringboot.config;
+
+import com.dev.studyspringboot.model.User;
+import com.dev.studyspringboot.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+
+@Component
+public class CustomUserDetailService implements UserDetailsService {
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> user = userRepository.findUserAndRoleToLogin(username);
+        return user.map(CustomUserDetails::new)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found" + username));
+    }
+}
+```
+Tại đây ta cần sử dụng userRepository, ta viết một hàm để lấy thông tin user và các quyền của user
+```
+@Query("SELECT u " +
+            "FROM User u " +
+            "LEFT JOIN FETCH u.userRoles ur " +
+            "LEFT JOIN FETCH ur.role r " +
+            "WHERE u.username = :username AND u.deletedAt is NULL")
+Optional<User> findUserAndRoleToLogin(String username);
+```
+kết quả của hàm này sẽ trả về:
+```
+{
+    "id": 1,
+    "username": "buianhtai",
+    "password": "$2a$12$vppta3lk5fsvi1PlAzogHu7QD.NO7EN69BOd3HQ4xo6CjXIjKI5k6",
+    "email": "buianhtai@gmail.com",
+    "fullName": "Bùi Anh Tài",
+    "address": "Quận 9, Hồ Chí Minh",
+    "phoneNumber": "0123456789",
+    "imageUrl": "https://image/imageUser.png",
+    "createdAt": "2023-05-30T22:02:02.528508",
+    "updatedAt": "2023-05-30T22:02:02.528508",
+    "deletedAt": null,
+    "userRoles": [
+        {
+            "userRoleId": 2,
+            "role": {
+                "id": 2,
+                "roleName": "USER"
+            }
+        },
+        {
+            "userRoleId": 1,
+            "role": {
+                "id": 1,
+                "roleName": "ADMIN"
+            }
+        }
+    ]
+}
+```
+Oke,giờ ta đã có dữ liệu, tiếp theo ta sẽ lại tiếp tục custom để đưa các quyền của trong database của ta vào hệ thống.
+Trong hàm custom trên chỉ có 1 phương thức loadUserByUsername trả về là một UserDetails. ta sẽ custom lại nốt UserDetails.
+
+Ta tạo class `CustomUserDetails` implements `UserDetails`. Sau đó override tất cả các hàm của lớp `UserDetails`.
+
+Tại đây ta đọc các hàm mặc định `getAuthorities()`, `getUsername()`, `getPassword()`,... ta sẽ thêm các properties vào
+class sau đó tạo constructor nhận thông tin user ta lấy được từ class trước sau đó gán cho các hàm này của hệ thống.
+Ngoài ra với 4 hàm boolean check phía dưới ta s auto trả về true, để chạy theo đơn giản, các hàm đó khi ta nâng cấp
+chức năng ta sẽ tiến hành config điều kiện lại sau.
+```
+package com.dev.studyspringboot.config;
+
+import com.dev.studyspringboot.model.User;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class CustomUserDetails implements UserDetails {
+
+    private final String username;
+    private final String password;
+    private final List<GrantedAuthority> authorities;
+
+    public CustomUserDetails(User user) {
+        username = user.getUsername();
+        password = user.getPassword();
+        authorities = user.getUserRoles().stream()
+                .map(userRole -> {
+                    String roleName = "ROLE_" + userRole.getRole().getRoleName();
+                    return new SimpleGrantedAuthority(roleName);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.authorities;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+}
+```
+Trong đoạn code set authorities ta phải thêm tiền tố `ROLE_` phía trước vì đây là config mặc định của spring security,
+mình đã đề cập vấn đề này ở trước. `authority = ROLE_ + role`. nếu dùng hasRole thì không cần tiền tố nhưng has Authority
+thì phải có.
+
+Đến đây việc custom lại các class đã xong, nếu bạn test ngay lúc này thì giao diện sẽ hiển thị một lỗi Không có `AuthenticationProvider`.
+Ta sẽ quay lại file config và thêm một đoạn config `AuthenticationProvider`.
+```
+@Bean
+public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+    authenticationProvider.setUserDetailsService(userDetailsService());
+    authenticationProvider.setPasswordEncoder(passwordEncoder());
+    return authenticationProvider;
+}
+```
+Oke. tới đây thì mọi thứ đã chạy tốt. Nếu muốn tìm hiểu rõ hơn thì link mình tham khảo mình để bên dưới. 
+
+**Phần authentication này mình tham khảo tại video: https://www.youtube.com/watch?v=R76S0tfv36w**
+
+Trong các phần tiếp theo của Security ta sẽ tìm hiểu và làm JWT Token và Oauth2.
 
 
 ## Stage 3: Handle Exception and Validation
