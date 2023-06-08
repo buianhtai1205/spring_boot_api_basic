@@ -40,8 +40,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf().disable()
                 .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin() // trả về page login nếu chưa authenticate

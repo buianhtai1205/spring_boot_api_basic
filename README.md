@@ -649,8 +649,8 @@ trực tiếp trong các method
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http.csrf().disable()
             .authorizeHttpRequests((authorize) -> authorize
-                    .requestMatchers("/**").permitAll()
                     .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/**").permitAll()
                     .anyRequest().authenticated()
             )
             .formLogin() // trả về page login nếu chưa authenticate
