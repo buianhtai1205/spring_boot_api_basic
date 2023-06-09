@@ -1356,6 +1356,8 @@ Và đây là kết quả
 
 ![img_2.png](images/img_9.png)
 
+**Link video mình tham khảo: https://www.youtube.com/watch?v=NcLtLZqGu2M**
+
 ## Stage 4: Optimize Performance and Caching
 
 ## Stage 5: Testing and Logging
