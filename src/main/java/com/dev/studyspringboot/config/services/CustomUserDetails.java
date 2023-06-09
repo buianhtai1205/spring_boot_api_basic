@@ -1,4 +1,4 @@
-package com.dev.studyspringboot.config;
+package com.dev.studyspringboot.config.services;
 
 import com.dev.studyspringboot.model.User;
 import org.springframework.security.core.GrantedAuthority;

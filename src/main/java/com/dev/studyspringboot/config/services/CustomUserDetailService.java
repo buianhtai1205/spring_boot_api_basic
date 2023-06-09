@@ -1,5 +1,6 @@
-package com.dev.studyspringboot.config;
+package com.dev.studyspringboot.config.services;
 
+import com.dev.studyspringboot.exception.ResourceNotFoundException;
 import com.dev.studyspringboot.model.User;
 import com.dev.studyspringboot.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,6 @@ public class CustomUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findUserAndRoleToLogin(username);
         return user.map(CustomUserDetails::new)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found" + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
     }
 }
