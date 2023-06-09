@@ -898,7 +898,227 @@ Oke. tới đây thì mọi thứ đã chạy tốt. Nếu muốn tìm hiểu r�
 
 **Phần authentication này mình tham khảo tại video: https://www.youtube.com/watch?v=R76S0tfv36w**
 
-Trong các phần tiếp theo của Security ta sẽ tìm hiểu và làm JWT Token và Oauth2.
+Trong các phần tiếp theo của Security ta sẽ tìm hiểu và làm JWT và Oauth2.
+
+### JWT - Json Web Token
+Đầu tiên, ta sẽ tìm hiểu tại sao cần nó.
+
+Hiện tại hệ thống ta đang làm đang xác thực bằng JSESSSIONID để định danh một người dùng.
+
+Session của user sẽ được lưu tại file or database.
+
+Khi user request đến server, request kèm theo jsessionid trong header.
+
+Sau đó authentication server sẽ so sánh đề kiểm tra trạng thái xác thực.
+
+Về tính mờ rộng (Scalability): Khi hệ thống của ta lớn lên, ta phải cần một session service
+để lưu các session. Tất nhiên điều này tốn chi phí.
+
+→ Nếu sử dụng JWT thì sao. JWT là một chuổi token và được lưu trong storage, khi request
+sẽ kèm theo trong Authorization, ta chỉ cần lấy nó và so sánh để xác thực. JWT Không cần
+lưu trong database nên sẽ không tốn thêm chi phí. Tuy nhiên, vấn đề của nó là dung lượng 
+gấp nhiều lần so với jsessionid
+
+Về tình bảo mật (Security): gần như cả hai cách trên đều giống nhau, khi bị người khác
+biết jsessionid hoặc jwt thì gần như người đó có thể truy cập vào hệ thống. Tất nhiên 
+jwt có thể hạn chế bớt bằng cách rút ngắn expiration date. Tuy nhiên giải pháp tốt nhất
+cho hai cách trên vẫn là SSL để đảm bảo các thông tin trong request được encrypt.
+
+Về hiệu suất (performance): Như đã nói ban đầu, JWT sẽ tốt hơn về mặt hiệu năng do chỉ
+cần kiểm tra Signature và 1 số thông tin trong claims là đủ. Trong khi jsessionid thì 
+phải truy vấn đến server (và điều này không hề miễn phí). Với một trang React/Angular với
+100 component thực hiện request đến server, mỗi request đều cần xác thực thì lượng kinh
+tế tiêu tốn theo thời gian sẽ quá nhiều.
+
+→ Đó chính là các lý do mà ta cần JWT.
+
+**Tài liệu mình tham khảo tại: https://viblo.asia/p/jwt-tu-co-ban-den-chi-tiet-LzD5dXwe5jY#_414-performance-17**
+
+Tiếp theo ta sẽ tiến hành config JWT cho hệ thống.
+
+Đầu tiên ta sẽ thêm một số dependence vào pom.xml
+```
+<dependency>
+	<groupId>io.jsonwebtoken</groupId>
+	<artifactId>jjwt-api</artifactId>
+	<version>0.11.5</version>
+</dependency>
+<dependency>
+	<groupId>io.jsonwebtoken</groupId>
+	<artifactId>jjwt-impl</artifactId>
+	<version>0.11.5</version>
+</dependency>
+<dependency>
+	<groupId>io.jsonwebtoken</groupId>
+	<artifactId>jjwt-jackson</artifactId>
+	<version>0.11.5</version>
+</dependency>
+```
+Ta sẽ sửa lại package config, ta tạo trong config hai package `jwt`(chứa các config jwt)
+và `service`(chứa các custom ta implements lại từ Spring) sau đó đưa các custom trước
+của chúng ta vào `services`.
+
+Trong `jwt` ta tạo một class JwtService chứa tất cả các hàm sử lý jwt.
+```
+package com.dev.studyspringboot.config.jwt;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
+import java.security.Key;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+@Component
+public class JwtService {
+    private static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+
+    public String generateToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, username);
+    }
+
+    private String createToken(Map<String, Object> claims, String username) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000*60*30))
+                .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
+    }
+
+    private Key getSignKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+}
+```
+Ta có một hàm generateToken nhận tham số username từ request.
+
+Hàm createToken sẽ tiến hành tạo một JWT. 
+
+Chúng ta sẽ chọn một SECRET khó để làm SignKey.
+
+Tiếp theo trong `controller` ta thêm một package `auth` xử lý các vấn đề xác thực.
+Ta tạo một AuthController
+```
+package com.dev.studyspringboot.controller.auth;
+
+import com.dev.studyspringboot.config.services.CustomAuthenticationManager;
+import com.dev.studyspringboot.dto.AuthRequest;
+import com.dev.studyspringboot.config.jwt.JwtService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class AuthController {
+    @Autowired
+    private JwtService jwtService;
+
+    @PostMapping("/authenticate")
+    public ResponseEntity<?> authenticateAndGetJwt(@RequestBody AuthRequest authRequest )
+    {
+         return ResponseEntity.ok(jwtService.generateToken(authRequest.getUsername()));
+    }
+}
+```
+Tại đây ta tạo thêm một package `dto`(Data Transfer Object). Mục đích của package này 
+sẽ được hiễu rõ hơn ở phần sau. 
+
+Ta tạo một AuthRequest chứa thông tin request login.
+```
+package com.dev.studyspringboot.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class AuthRequest {
+    private String username;
+    private String password;
+}
+```
+
+Giờ đây ta có thể vào Postman test api này, Ta cần truyền vào request body username, password
+
+Hệ thống sẽ trả về cho ta một JWT. Tuy nhiên nếu bạn thử ngồi thay đổi password hay username
+không tồn tại trong hệ thống thì nó vẫn trả về được. Ta cần phải xác thực thông tin 
+nhận được từ request với database trước khi tạo JWT.
+
+Chúng ta sẽ sử dụng một Interface `AuthenticationManager` để làm điều đó. Đến đây có hai
+cách để thực hiện:
+- Cách 1: Config nó vào `SecurityConfig` của chúng ta để sử dụng mặc định của hệ thống.
+  (Theo những gì mình tìm hiểu thì điều này không tốt)
+- Cách 2: Ta sẽ tạo một `CustomAuthenticationManager` implements `AuthenticationManager`, giống
+như cách chúng ta đẽ làm với các phần trước. 
+
+Ta sẽ tạo một CustomAuthenticationManager trong package `config/services`
+```
+package com.dev.studyspringboot.config.services;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
+
+@Component
+public class CustomAuthenticationManager implements AuthenticationManager {
+    @Autowired
+    private CustomUserDetailService customUserDetailsService;
+
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        final UserDetails userDetail = customUserDetailsService.loadUserByUsername(authentication.getName());
+        if (!new BCryptPasswordEncoder().matches(authentication.getCredentials().toString(), userDetail.getPassword())) {
+            throw new BadCredentialsException("Wrong password!");
+        }
+        return new UsernamePasswordAuthenticationToken(userDetail.getUsername(), userDetail.getPassword(), userDetail.getAuthorities());
+    }
+}
+```
+Mình làm cách này vì mình thích tùy biến các hàm theo ý muốn, và cũng để phần sau tự làm các exception cho chỉnh chu.
+
+Oke, sau khí đả tạo xong class trên ta sẽ quay lại `AuthController` để thay đổi nó
+```
+@PostMapping("/authenticate")
+public ResponseEntity<?> authenticateAndGetJwt(@RequestBody AuthRequest authRequest )
+{
+    Authentication authentication = authenticationManager
+            .authenticate(new UsernamePasswordAuthenticationToken(
+            authRequest.getUsername(),
+            authRequest.getPassword()
+    ));
+    if (authentication.isAuthenticated()) {
+        return ResponseEntity.ok(jwtService.generateToken(authRequest.getUsername()));
+    }
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+}
+```
+Sau khi test lại với api thì mọi thứ đã oke hơn, hệ thống sẽ báo wrong password nếu nhập sai, và user not found
+nếu không có database (Phần exception tạm thời làm vậy, Vào Stage Exception mình sẽ quay lại config kỷ hơn)
+
+
 
 
 ## Stage 3: Handle Exception and Validation
@@ -952,6 +1172,189 @@ public class GlobalExceptionHandler {
     }
 }
 ```
+Oke, tiếp theo ta sẽ tiến hành thêm nó vào config để khi test api, ta sẽ nhập JWT vào Authorization Bearer Token
+ta có thể xác thực và phân quyền để request đến server. 
+![img.png](images/img_6.png)
+
+Ta sẽ quay lại `JwtService` để viết thêm một số hàm extract để thấy các thông tin username, claims.
+```
+package com.dev.studyspringboot.config.jwt;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
+import java.security.Key;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+@Component
+public class JwtService {
+    private static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts
+                .parserBuilder()
+                .setSigningKey(getSignKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    private Boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    public String generateToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, username);
+    }
+
+    private String createToken(Map<String, Object> claims, String username) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000*60*30))
+                .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
+    }
+
+    private Key getSignKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+}
+```
+3 hàm đầu là các hàm lấy thông tin từ token, 2 hàm sau là các hàm kiểm tra hạn của token.
+
+Tiếp theo ta tạo một file `JwtAuthFilter` trong `config/jwt`
+```
+package com.dev.studyspringboot.config.jwt;
+
+import com.dev.studyspringboot.config.services.CustomUserDetailService;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+@Component
+public class JwtAuthFilter extends OncePerRequestFilter {
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private CustomUserDetailService customUserDetailService;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain )
+            throws ServletException, IOException
+    {
+        String authHeader = request.getHeader("Authorization");
+        String token = null;
+        String username = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            username = jwtService.extractUsername(token);
+        }
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = customUserDetailService.loadUserByUsername(username);
+
+            if (jwtService.validateToken(token, userDetails)) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        }
+
+        filterChain.doFilter(request, response);
+    }
+}
+```
+Class này sẽ implements OncePerRequestFilter, sau đó ta tiến hành override lại phương thức `doFilterInternal()`,
+
+Tiếp theo ta quay lại file config gốc để thêm filter vào http
+```
+public class SecurityConfig {
+    @Autowired
+    private JwtAuthFilter jwtAuthFilter;
+
+    // authentication
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return new CustomUserDetailService();
+    }
+
+    //authorization
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http.csrf().disable()
+                .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
+    ...    
+}
+```
+Đến đây thì mọi thứ đã hoàn tất. Ta có thể test trực tiếp với Postman
+
+Ta sẽ lấy JWT trước:
+
+![img.png](images/img_7.png)
+
+Sau đó ta vào một api cần login và role để test, ta sẽ thêm JWT vào Authorization Bearer Token
+
+![img_1.png](images/img_8.png)
+
+Và đây là kết quả
+
+![img_2.png](images/img_9.png)
 
 ## Stage 4: Optimize Performance and Caching
 
