@@ -1118,62 +1118,9 @@ public ResponseEntity<?> authenticateAndGetJwt(@RequestBody AuthRequest authRequ
 Sau khi test lại với api thì mọi thứ đã oke hơn, hệ thống sẽ báo wrong password nếu nhập sai, và user not found
 nếu không có database (Phần exception tạm thời làm vậy, Vào Stage Exception mình sẽ quay lại config kỷ hơn)
 
-
-
-
-## Stage 3: Handle Exception and Validation
-### Exception basic
-Trong package exception định nghĩa các exception cần thiết
-```
-package com.dev.studyspringboot.exception;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class NullException extends RuntimeException{
-    public NullException(String message) {
-        super(message);
-    }
-}
-```
-...
-
-Tạo một GlobalExceptionHandler x lý các exception trên
-```
-package com.dev.studyspringboot.exception;
-
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-
-@ControllerAdvice
-public class GlobalExceptionHandler {
-    @ExceptionHandler(NullException.class)
-    public ResponseEntity<String> handleNullException(NullException ex) {
-        return ResponseEntity.badRequest().body(ex.getMessage());
-    }
-
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(DuplicateKeyException.class)
-    public ResponseEntity<String> handleDuplicateKeyException(DuplicateKeyException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(WarningException.class)
-    public ResponseEntity<String> handleWarningException(WarningException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
-}
-```
 Oke, tiếp theo ta sẽ tiến hành thêm nó vào config để khi test api, ta sẽ nhập JWT vào Authorization Bearer Token
-ta có thể xác thực và phân quyền để request đến server. 
+ta có thể xác thực và phân quyền để request đến server.
+
 ![img.png](images/img_6.png)
 
 Ta sẽ quay lại `JwtService` để viết thêm một số hàm extract để thấy các thông tin username, claims.
@@ -1357,6 +1304,60 @@ Và đây là kết quả
 ![img_2.png](images/img_9.png)
 
 **Link video mình tham khảo: https://www.youtube.com/watch?v=NcLtLZqGu2M**
+
+
+## Stage 3: Handle Exception and Validation
+### Exception basic
+Trong package exception định nghĩa các exception cần thiết
+```
+package com.dev.studyspringboot.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+public class NullException extends RuntimeException{
+    public NullException(String message) {
+        super(message);
+    }
+}
+```
+...
+
+Tạo một GlobalExceptionHandler xử lý các exception trên
+```
+package com.dev.studyspringboot.exception;
+
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(NullException.class)
+    public ResponseEntity<String> handleNullException(NullException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<String> handleDuplicateKeyException(DuplicateKeyException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(WarningException.class)
+    public ResponseEntity<String> handleWarningException(WarningException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+}
+```
+
 
 ## Stage 4: Optimize Performance and Caching
 
