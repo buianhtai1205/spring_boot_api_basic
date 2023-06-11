@@ -3,6 +3,10 @@ package com.dev.studyspringboot.controller.auth;
 import com.dev.studyspringboot.config.services.CustomAuthenticationManager;
 import com.dev.studyspringboot.dto.AuthRequest;
 import com.dev.studyspringboot.config.jwt.JwtService;
+import com.dev.studyspringboot.dto.JwtResponse;
+import com.dev.studyspringboot.dto.RefreshTokenRequest;
+import com.dev.studyspringboot.model.RefreshToken;
+import com.dev.studyspringboot.service.IRefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +22,8 @@ public class AuthController {
     private JwtService jwtService;
     @Autowired
     private CustomAuthenticationManager authenticationManager;
+    @Autowired
+    private IRefreshTokenService refreshTokenService;
 
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticateAndGetJwt(@RequestBody AuthRequest authRequest )
@@ -28,8 +34,27 @@ public class AuthController {
                 authRequest.getPassword()
         ));
         if (authentication.isAuthenticated()) {
-            return ResponseEntity.ok(jwtService.generateToken(authRequest.getUsername()));
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(authRequest.getUsername());
+            JwtResponse jwtResponse = JwtResponse.builder()
+                    .accessToken(jwtService.generateToken(authRequest.getUsername()))
+                    .token(refreshToken.getToken())
+                    .build();
+            return ResponseEntity.ok(jwtResponse);
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    @PostMapping("/refreshToken")
+    public JwtResponse refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+        return refreshTokenService.findByToken(refreshTokenRequest.getToken())
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String accessToken = jwtService.generateToken(user.getUsername());
+                    return JwtResponse.builder()
+                            .accessToken(accessToken)
+                            .token(refreshTokenRequest.getToken())
+                            .build();
+                }).orElseThrow(() -> new RuntimeException("Refresh token is not in database"));
     }
 }
