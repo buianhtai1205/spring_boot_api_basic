@@ -7,6 +7,8 @@ import com.dev.studyspringboot.repository.UserRepository;
 import com.dev.studyspringboot.util.ReflectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,8 @@ public class UserServiceImpl implements IUserService{
     public void addUser(User user) {
         if (user != null) {
             if (!userRepository.existsByUsernameOrEmail(user.getUsername(), user.getEmail())) {
+                PasswordEncoder encoder = new BCryptPasswordEncoder();
+                user.setPassword(encoder.encode(user.getPassword()));
                 userRepository.save(user);
             } else throw new DuplicateKeyException("Username or Email already exists!");
         } else throw new NullException("User is null value!");
