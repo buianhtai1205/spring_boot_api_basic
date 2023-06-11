@@ -1305,6 +1305,160 @@ Và đây là kết quả
 
 **Link video mình tham khảo: https://www.youtube.com/watch?v=NcLtLZqGu2M**
 
+### Refresh Token
+Trong phần trước ta đã tạo JWT, nhưng expiryDate của nó ta đang tạo thời gian 30p.
+Việc làm như vậy, mang mục đích lở có bị khai thác và lộ JWT thì nếu nó còn hạn thì
+quá nguy hiểm, vì vậy ta phải refresh jwt thường xuyên để hạn chế vấn đề này.
+
+Tuy nhiên, với một ứng dụng web application, nếu bạn là người dùng, cứ 30p là bạn 
+phải sign in lại mới có thể su73 dụng trang web thi bạn có thấy khó chịu không. Vì
+vậy ta cần tạo refreshToken để giải quyết vấn đề này.
+
+Ta sẽ tạo thêm một refreshToken cho mỗi user, khi user login, ta tạo và lưu một refreshToken
+. Khi JWT hết hạn, ta có thể không yêu cầu người dùng sign in lại. Ta chỉ cần phía front-end
+gửi refreshToken thì server sẽ tạo lại JWT và gừi lại bên front-end.
+
+Đầu tiên ta tạo model RefreshToken, chứa `token`, `expiryDate` (hạn mình cho là 10 ngày, sau 10
+ngày thì user phải sign in lại chứ không refresh jwt được nữa. Tùy vào trang web của các
+bạn mà các bạn cấu hình) , `OneToOne User`.
+```
+package com.dev.studyspringboot.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.Instant;
+
+@Entity
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class RefreshToken {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String token;
+    private Instant expiryDate;
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
+}
+```
+Tiếp theo như các model khác ta sẽ tạo Repository, và Service
+
+Sau đó trong service ta sử lý `createRefreshToken(String username)`
+```
+package com.dev.studyspringboot.service;
+
+import com.dev.studyspringboot.model.RefreshToken;
+import com.dev.studyspringboot.repository.RefreshTokenRepository;
+import com.dev.studyspringboot.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+public class RefreshTokenServiceImpl implements IRefreshTokenService{
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public RefreshToken createRefreshToken(String username) {
+        RefreshToken refreshToken = RefreshToken.builder()
+                .token(UUID.randomUUID().toString())
+                .expiryDate(Instant.now().plusSeconds(86400*10)) // 10 days
+                .user(userRepository.findByUsernameAndDeletedAtIsNull(username))
+                .build();
+        return refreshTokenRepository.save(refreshToken);
+    }
+
+    @Override
+    public Optional<RefreshToken> findByToken(String token) {
+        return refreshTokenRepository.findByToken(token);
+    }
+
+    @Override
+    public RefreshToken verifyExpiration(RefreshToken token) {
+        if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
+            refreshTokenRepository.delete(token);
+            throw new RuntimeException(token.getToken() + " . RefreshToken was expired. Please make new sign in!");
+        }
+        return token;
+    }
+}
+```
+Oke, bây giờ quay lại `AuthController`, ta cần làm hai việc, ta thay đổi một chút ở sign in,
+Khi sign in ngoài generate JWT ta cần tạo RefreshToken
+```
+@PostMapping("/authenticate")
+public ResponseEntity<?> authenticateAndGetJwt(@RequestBody AuthRequest authRequest )
+{
+    Authentication authentication = authenticationManager
+            .authenticate(new UsernamePasswordAuthenticationToken(
+            authRequest.getUsername(),
+            authRequest.getPassword()
+    ));
+    if (authentication.isAuthenticated()) {
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(authRequest.getUsername());
+        JwtResponse jwtResponse = JwtResponse.builder()
+                .accessToken(jwtService.generateToken(authRequest.getUsername()))
+                .token(refreshToken.getToken())
+                .build();
+        return ResponseEntity.ok(jwtResponse);
+    }
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+}
+```
+Trong hàm trên mình có tạo thêm `dto/JwtResponse` bao jwt và refreshToken trả về front-end
+```
+package com.dev.studyspringboot.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class JwtResponse {
+    private String accessToken;
+    private String token;
+}
+```
+Sau đó ta viết thêm một request POST refreshToken để refresh jwt
+```
+@PostMapping("/refreshToken")
+public JwtResponse refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+    return refreshTokenService.findByToken(refreshTokenRequest.getToken())
+            .map(refreshTokenService::verifyExpiration)
+            .map(RefreshToken::getUser)
+            .map(user -> {
+                String accessToken = jwtService.generateToken(user.getUsername());
+                return JwtResponse.builder()
+                        .accessToken(accessToken)
+                        .token(refreshTokenRequest.getToken())
+                        .build();
+            }).orElseThrow(() -> new RuntimeException("Refresh token is not in database"));
+}
+```
+Trong hàm trên `RefreshTokenRequest` được tạo trong dto, chỉ có 1 field String token.
+
+Front-end sẽ gửi token về phía server, server sẽ truy vấn database xem có tồn tại token
+trong table refresh_token không, và kiểm tra expirydate của nó. Sau đó nếu hợp lệ sẽ
+tạo lại jwt và gừi về front-end.
+
+![img.png](images/img_10.png)
 
 ## Stage 3: Handle Exception and Validation
 ### Exception basic
