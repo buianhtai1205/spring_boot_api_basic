@@ -1,5 +1,6 @@
 package com.dev.studyspringboot.controller.admin;
 
+import com.dev.studyspringboot.dto.DefaultResponse;
 import com.dev.studyspringboot.model.Order;
 import com.dev.studyspringboot.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,33 +17,51 @@ public class AdminOrderController {
     private IOrderService iOrderService;
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateOrder(
+    public ResponseEntity<?> updateOrder(
             @PathVariable("id") Long orderId,
             @RequestBody Order order )
     {
         iOrderService.updateOrder(orderId, order);
-        return ResponseEntity.status(HttpStatus.OK).body("Order updated successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Order updated successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteOrder(
+    public ResponseEntity<?> deleteOrder(
             @PathVariable("id") Long orderId )
     {
         iOrderService.deteleOrder(orderId);
-        return ResponseEntity.status(HttpStatus.OK).body("Order deleted successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Order deleted successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Order>> getAllOrder() {
+    public ResponseEntity<?> getAllOrder() {
         List<Order> orders = iOrderService.getAllOrder();
-        return new ResponseEntity<>(orders, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get list order successfully")
+                .data(orders)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/show/{id}")
-    public ResponseEntity<Order> getOneOrder(
+    public ResponseEntity<?> getOneOrder(
             @PathVariable("id") Long orderId )
     {
         Order order = iOrderService.getOneOrder(orderId);
-        return new ResponseEntity<>(order, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get order successfully")
+                .data(order)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

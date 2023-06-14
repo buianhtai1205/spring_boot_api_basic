@@ -1,5 +1,6 @@
 package com.dev.studyspringboot.controller;
 
+import com.dev.studyspringboot.dto.DefaultResponse;
 import com.dev.studyspringboot.model.Brand;
 import com.dev.studyspringboot.service.IBrandService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,17 +19,27 @@ public class BrandController {
     private IBrandService iBrandService;
 
     @GetMapping("/")
-    public ResponseEntity<List<Brand>> getAllBrand()
+    public ResponseEntity<?> getAllBrand()
     {
         List<Brand> brands = iBrandService.getAllBrand();
-        return new ResponseEntity<>(brands, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get list brand successfully")
+                .data(brands)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/show/{id}")
-    public ResponseEntity<Brand> getOneBrand(
+    public ResponseEntity<?> getOneBrand(
             @PathVariable("id") Long brandId )
     {
         Brand brand = iBrandService.getOneBrand(brandId);
-        return new ResponseEntity<>(brand, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get brand successfully")
+                .data(brand)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

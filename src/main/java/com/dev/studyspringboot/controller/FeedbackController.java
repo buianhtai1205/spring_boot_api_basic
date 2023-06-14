@@ -1,5 +1,6 @@
 package com.dev.studyspringboot.controller;
 
+import com.dev.studyspringboot.dto.DefaultResponse;
 import com.dev.studyspringboot.model.Feedback;
 import com.dev.studyspringboot.model.OrderProduct;
 import com.dev.studyspringboot.service.IFeedbackService;
@@ -22,7 +23,7 @@ public class FeedbackController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> addFeedback(
+    public ResponseEntity<?> addFeedback(
             @RequestBody FeedbackAndOrderProduct feedbackAndOrderProduct )
     {
         System.out.println(feedbackAndOrderProduct.feedback().toString());
@@ -30,52 +31,79 @@ public class FeedbackController {
         iFeedbackService.addFeedback(
                 feedbackAndOrderProduct.feedback(),
                 feedbackAndOrderProduct.orderProduct() );
-        return ResponseEntity.status(HttpStatus.CREATED).body("Feedback created successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message("Feedback created successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> updateFeedback(
+    public ResponseEntity<?> updateFeedback(
             @PathVariable("id") Long feedbackId,
             @RequestBody Feedback feedback )
     {
         iFeedbackService.updateFeedback(feedbackId, feedback);
-        return ResponseEntity.status(HttpStatus.OK).body("Feedback updated successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Feedback updated successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> deleteFeedback(
+    public ResponseEntity<?> deleteFeedback(
             @PathVariable("id") Long feedbackId )
     {
         iFeedbackService.deleteFeedback(feedbackId);
-        return ResponseEntity.status(HttpStatus.OK).body("Feedback deleted successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Feedback deleted successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/")
     @PreAuthorize("permitAll")
-    public ResponseEntity<List<Feedback>> getAllFeedback()
+    public ResponseEntity<?> getAllFeedback()
     {
         List<Feedback> feedbacks = iFeedbackService.getAllFeedback();
-        return new ResponseEntity<>(feedbacks, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get list feedback successfully")
+                .data(feedbacks)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/show/{id}")
     @PreAuthorize("permitAll")
-    public ResponseEntity<Feedback> getOneFeedback(
+    public ResponseEntity<?> getOneFeedback(
             @PathVariable("id") Long feedbackId )
     {
         Feedback feedback = iFeedbackService.getOneFeedback(feedbackId);
-        return new ResponseEntity<>(feedback, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get feedback successfully")
+                .data(feedback)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/get/{id}")
     @PreAuthorize("permitAll")
-    public ResponseEntity<List<Feedback>> getAllFeedbackOfProduct(
+    public ResponseEntity<?> getAllFeedbackOfProduct(
             @PathVariable("id") Long productId )
     {
         List<Feedback> feedbacks = iFeedbackService.getAllFeedbackOfProduct(productId);
-        return new ResponseEntity<>(feedbacks, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get list feedback of product successfully")
+                .data(feedbacks)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
 

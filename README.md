@@ -1511,7 +1511,120 @@ public class GlobalExceptionHandler {
     }
 }
 ```
+### Consistent response format
+Ta đã cấu trúc sơ bộ exception, nó đã gần như ổn và tất nhiên là đã có thể sữ dụng
+được, tuy nhiên đó là về phía backend. 
 
+Ta sẽ nghĩ cho bên phía frontend nữa. Các data, message, và exception ta đang trả về
+nó đang bị hơi loạn. 
+- Có lúc là các data từ service trả về.
+- Có lúc là các message truyền vào từ exception và được trả về từ GlobalExceptionHandler
+- Có lúc lại là các exception của System, Framework, nó trả về một lượng lớn message không
+cần thiết quá bên phía frontend.
+
+Chính vì thế mình sẽ làm cho tất cả chúng được đồng bộ (consistent) thành format:
+```
+{
+  "statusCode": 200|201|304|... ,
+  "message": "Get product success"|"..." ,
+  "data": {} | [{}] ...
+}
+```
+Đầu tiên ta tạo `DefaultResponse` trong dto:
+```
+package com.dev.studyspringboot.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class DefaultResponse {
+    private int statusCode;
+    private String message;
+    private Object data;
+}
+```
+Giờ ta tiến hành custom lại GlobalExceptionHandler của chúng ta
+```
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(NullException.class)
+    public ResponseEntity<DefaultResponse> handleNullException(NullException ex) {
+        DefaultResponse defaultResponse = DefaultResponse.builder()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .build();
+        return ResponseEntity.badRequest().body(defaultResponse);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<DefaultResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        DefaultResponse defaultResponse = DefaultResponse.builder()
+                .statusCode(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(defaultResponse);
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<DefaultResponse> handleDuplicateKeyException(DuplicateKeyException ex) {
+        DefaultResponse defaultResponse = DefaultResponse.builder()
+                .statusCode(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .build();
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(defaultResponse);
+    }
+
+    @ExceptionHandler(WarningException.class)
+    public ResponseEntity<DefaultResponse> handleWarningException(WarningException ex) {
+        DefaultResponse defaultResponse = DefaultResponse.builder()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(defaultResponse);
+    }
+}
+```
+Oke, theo đó ta sẽ tiến hành sửa lại các response trong Các `Controller` và `Service` nếu có
+để chuẫn format đồng bộ.
+
+Trong quá trình dò các file và sửa mình có nhận thấy một exception mình throw lúc kiểm tra
+authentication `BadCredentialsException`.
+
+Đây như mình nói là một exception của hệ thống. Mình sẽ tiến hành config nó trong 
+`GlobalExceptionHandler` để nó cũng trả về dạng mình mong muốn
+```
+// Handle BadCredentialsException return DefaultResponse
+@ExceptionHandler(BadCredentialsException.class)
+public ResponseEntity<DefaultResponse> handleBadCredentialsException(BadCredentialsException ex) {
+    DefaultResponse response = DefaultResponse.builder()
+            .statusCode(HttpStatus.UNAUTHORIZED.value())
+            .message(ex.getMessage())
+            .build();
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+}
+```
+
+Ngoài ra với các exception không mong muốn khác mà mình chưa định nghĩa hoặc chưa phát hiện
+mình cũng sẽ config nốt ở cuối file GlobalExceptionHandler để nó return dạng mình muốn.
+```
+/ Handle others exception not define
+@ExceptionHandler(Exception.class)
+public ResponseEntity<DefaultResponse> handleException(Exception ex) {
+    DefaultResponse response = DefaultResponse.builder()
+            .statusCode(500)
+            .message(ex.getMessage())
+            .build();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+}
+```
+Đến đây thì mọi thứ chắc đã oke. Nếu sau này có exception khác thì mình sẽ config để trên
+exception này là mọi thứ hoạt động tốt.
 
 ## Stage 4: Optimize Performance and Caching
 

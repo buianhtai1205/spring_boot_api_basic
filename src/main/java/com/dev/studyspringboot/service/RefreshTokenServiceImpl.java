@@ -1,5 +1,6 @@
 package com.dev.studyspringboot.service;
 
+import com.dev.studyspringboot.exception.WarningException;
 import com.dev.studyspringboot.model.RefreshToken;
 import com.dev.studyspringboot.repository.RefreshTokenRepository;
 import com.dev.studyspringboot.repository.UserRepository;
@@ -36,7 +37,7 @@ public class RefreshTokenServiceImpl implements IRefreshTokenService{
     public RefreshToken verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(token);
-            throw new RuntimeException(token.getToken() + " . RefreshToken was expired. Please make new sign in!");
+            throw new WarningException(token.getToken() + " . RefreshToken was expired. Please make new sign in!");
         }
         return token;
     }

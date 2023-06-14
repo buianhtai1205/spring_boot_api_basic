@@ -1,5 +1,6 @@
 package com.dev.studyspringboot.controller.admin;
 
+import com.dev.studyspringboot.dto.DefaultResponse;
 import com.dev.studyspringboot.model.Feedback;
 import com.dev.studyspringboot.service.IFeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,26 +17,40 @@ public class AdminFeedbackController {
     private IFeedbackService iFeedbackService;
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteFeedback(
+    public ResponseEntity<?> deleteFeedback(
             @PathVariable("id") Long feedbackId )
     {
         iFeedbackService.deleteFeedback(feedbackId);
-        return ResponseEntity.status(HttpStatus.OK).body("Feedback deleted successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Feedback deleted successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Feedback>> getAllFeedback()
+    public ResponseEntity<?> getAllFeedback()
     {
         List<Feedback> feedbacks = iFeedbackService.getAllFeedback();
-        return new ResponseEntity<>(feedbacks, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get list feedback successfully")
+                .data(feedbacks)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/show/{id}")
-    public ResponseEntity<Feedback> getOneFeedback(
+    public ResponseEntity<?> getOneFeedback(
             @PathVariable("id") Long feedbackId )
     {
         Feedback feedback = iFeedbackService.getOneFeedback(feedbackId);
-        return new ResponseEntity<>(feedback, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get feedback successfully")
+                .data(feedback)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
 

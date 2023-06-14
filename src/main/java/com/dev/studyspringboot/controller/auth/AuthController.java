@@ -5,10 +5,10 @@ import com.dev.studyspringboot.dto.AuthRequest;
 import com.dev.studyspringboot.config.jwt.JwtService;
 import com.dev.studyspringboot.dto.JwtResponse;
 import com.dev.studyspringboot.dto.RefreshTokenRequest;
+import com.dev.studyspringboot.exception.ResourceNotFoundException;
 import com.dev.studyspringboot.model.RefreshToken;
 import com.dev.studyspringboot.service.IRefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -40,8 +40,7 @@ public class AuthController {
                     .token(refreshToken.getToken())
                     .build();
             return ResponseEntity.ok(jwtResponse);
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } else throw new RuntimeException("Internal Server Error");
     }
 
     @PostMapping("/refreshToken")
@@ -55,6 +54,6 @@ public class AuthController {
                             .accessToken(accessToken)
                             .token(refreshTokenRequest.getToken())
                             .build();
-                }).orElseThrow(() -> new RuntimeException("Refresh token is not in database"));
+                }).orElseThrow(() -> new ResourceNotFoundException("Refresh token is not in database"));
     }
 }

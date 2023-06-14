@@ -1,5 +1,6 @@
 package com.dev.studyspringboot.controller;
 
+import com.dev.studyspringboot.dto.DefaultResponse;
 import com.dev.studyspringboot.model.Product;
 import com.dev.studyspringboot.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,18 +19,28 @@ public class ProductController {
 
     @PreAuthorize("permitAll")
     @GetMapping("/")
-    public ResponseEntity<List<Product>> getAllProduct()
+    public ResponseEntity<?> getAllProduct()
     {
         List<Product> products = iProductService.getAllProduct();
-        return new ResponseEntity<>(products, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get list product successfully")
+                .data(products)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PreAuthorize("permitAll")
     @GetMapping("/show/{id}")
-    public ResponseEntity<Product> getOneProduct(
+    public ResponseEntity<?> getOneProduct(
             @PathVariable("id") Long productId )
     {
         Product product = iProductService.getOneProduct(productId);
-        return new ResponseEntity<>(product, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get product successfully")
+                .data(product)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

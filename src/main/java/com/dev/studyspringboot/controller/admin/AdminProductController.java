@@ -1,5 +1,6 @@
 package com.dev.studyspringboot.controller.admin;
 
+import com.dev.studyspringboot.dto.DefaultResponse;
 import com.dev.studyspringboot.model.Product;
 import com.dev.studyspringboot.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,42 +18,64 @@ public class AdminProductController {
     private IProductService iProductService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> addProduct(
+    public ResponseEntity<?> addProduct(
             @Validated @RequestBody Product product )
     {
         iProductService.addProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Product created successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message("Product created successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateProduct(
+    public ResponseEntity<?> updateProduct(
             @PathVariable("id") Long productId,
             @RequestBody Product product )
     {
         iProductService.updateProduct(productId, product);
-        return ResponseEntity.status(HttpStatus.OK).body("Product updated successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message("Product updated successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping("/delete/{id}")
-    public ResponseEntity<String> deleteProduct(
+    public ResponseEntity<?> deleteProduct(
             @PathVariable("id") Long productId )
     {
         iProductService.deleteProduct(productId);
-        return ResponseEntity.status(HttpStatus.OK).body("Product deleted successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message("Product deleted successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Product>> getAllProduct()
+    public ResponseEntity<?> getAllProduct()
     {
         List<Product> products = iProductService.getAllProduct();
-        return new ResponseEntity<>(products, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message("Get list product successfully")
+                .data(products)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/show/{id}")
-    public ResponseEntity<Product> getOneProduct(
+    public ResponseEntity<?> getOneProduct(
             @PathVariable("id") Long productId )
     {
         Product product = iProductService.getOneProduct(productId);
-        return new ResponseEntity<>(product, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message("Get list product successfully")
+                .data(product)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

@@ -1,5 +1,6 @@
 package com.dev.studyspringboot.controller.admin;
 
+import com.dev.studyspringboot.dto.DefaultResponse;
 import com.dev.studyspringboot.model.User;
 import com.dev.studyspringboot.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,42 +18,64 @@ public class AdminUserController {
     private IUserService iUserService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> addUser(
+    public ResponseEntity<?> addUser(
             @Validated @RequestBody User user )
     {
         iUserService.addUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message("User created successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateUser(
+    public ResponseEntity<?> updateUser(
             @PathVariable("id") Long userId,
             @RequestBody User user )
     {
         iUserService.updateUser(userId, user);
-        return ResponseEntity.status(HttpStatus.OK).body("User updated successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("User updated successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping("/delete/{id}")
-    public ResponseEntity<String> deleteUser(
+    public ResponseEntity<?> deleteUser(
             @PathVariable("id") Long userId )
     {
         iUserService.deleteUser(userId);
-        return ResponseEntity.status(HttpStatus.OK).body("User deleted successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("User deleted successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<User>> getAllUser()
+    public ResponseEntity<?> getAllUser()
     {
         List<User> users = iUserService.getAllUser();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get list user successfully")
+                .data(users)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/show/{id}")
-    public ResponseEntity<User> getOneUser(
+    public ResponseEntity<?> getOneUser(
             @PathVariable("id") Long userId )
     {
         User user = iUserService.getOneUser(userId);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get user successfully")
+                .data(user)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

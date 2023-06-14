@@ -1,5 +1,6 @@
 package com.dev.studyspringboot.controller.admin;
 
+import com.dev.studyspringboot.dto.DefaultResponse;
 import com.dev.studyspringboot.model.Brand;
 import com.dev.studyspringboot.service.IBrandService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,42 +18,64 @@ public class AdminBrandController {
     private IBrandService iBrandService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> addBrand(
+    public ResponseEntity<?> addBrand(
             @Validated @RequestBody Brand brand )
     {
         iBrandService.addBrand(brand);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Brand created successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message("Brand created successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateBrand(
+    public ResponseEntity<?> updateBrand(
             @PathVariable("id") Long brandId,
             @RequestBody Brand brand )
     {
         iBrandService.updateBrand(brandId, brand);
-        return ResponseEntity.status(HttpStatus.OK).body("Brand updated successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Brand updated successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping("/delete/{id}")
-    public ResponseEntity<String> deleteBrand(
+    public ResponseEntity<?> deleteBrand(
             @PathVariable("id") Long brandId )
     {
         iBrandService.deleteBrand(brandId);
-        return ResponseEntity.status(HttpStatus.OK).body("Brand deleted successfully");
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Brand deleted successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<Brand>> getAllBrand()
+    public ResponseEntity<?> getAllBrand()
     {
         List<Brand> brands = iBrandService.getAllBrand();
-        return new ResponseEntity<>(brands, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get list brand successfully")
+                .data(brands)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/show/{id}")
-    public ResponseEntity<Brand> getOneBrand(
+    public ResponseEntity<?> getOneBrand(
             @PathVariable("id") Long brandId )
     {
         Brand brand = iBrandService.getOneBrand(brandId);
-        return new ResponseEntity<>(brand, HttpStatus.OK);
+        DefaultResponse response = DefaultResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Get brand successfully")
+                .data(brand)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
