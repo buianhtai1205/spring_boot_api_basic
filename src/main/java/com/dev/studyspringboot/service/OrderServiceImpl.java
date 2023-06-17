@@ -1,5 +1,6 @@
 package com.dev.studyspringboot.service;
 
+import com.dev.studyspringboot.dto.OrderDTO;
 import com.dev.studyspringboot.exception.NullException;
 import com.dev.studyspringboot.exception.ResourceNotFoundException;
 import com.dev.studyspringboot.model.Order;
@@ -30,7 +31,7 @@ public class OrderServiceImpl implements IOrderService{
 
     @Transactional
     @Override
-    public void addOrder(Order order) {
+    public void addOrder(OrderDTO order) {
         if (order != null) {
             User user = userRepository.findByIdAndDeletedAtIsNull(order.getUser().getId());
 
@@ -41,8 +42,10 @@ public class OrderServiceImpl implements IOrderService{
                 for (OrderProduct orderProduct : orderProducts) {
                     Product product = productRepository.findByIdAndDeletedAtIsNull(orderProduct.getProduct().getId());
                     if (product != null) {
-                        orderRepository.saveAndFlush(order);
-                        orderProduct.setOrder(order);
+                        Order newOrder = new Order();
+                        ReflectionUtils.copyNonNullFields(order, newOrder);
+                        orderRepository.saveAndFlush(newOrder);
+                        orderProduct.setOrder(newOrder);
                         orderProductRepository.save(orderProduct);
                     } else throw new ResourceNotFoundException("Product has ID: "
                             + orderProduct.getProduct().getId() + " NOT exist!");

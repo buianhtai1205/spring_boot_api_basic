@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +27,7 @@ public class AuthController {
     private IRefreshTokenService refreshTokenService;
 
     @PostMapping("/authenticate")
-    public ResponseEntity<?> authenticateAndGetJwt(@RequestBody AuthRequest authRequest )
+    public ResponseEntity<?> authenticateAndGetJwt(@Validated @RequestBody AuthRequest authRequest )
     {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(

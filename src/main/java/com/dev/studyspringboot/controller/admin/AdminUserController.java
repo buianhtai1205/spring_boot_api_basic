@@ -1,6 +1,7 @@
 package com.dev.studyspringboot.controller.admin;
 
 import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.UserDTO;
 import com.dev.studyspringboot.model.User;
 import com.dev.studyspringboot.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public class AdminUserController {
 
     @PostMapping("/create")
     public ResponseEntity<?> addUser(
-            @Validated @RequestBody User user )
+            @Validated @RequestBody UserDTO user )
     {
         iUserService.addUser(user);
         DefaultResponse response = DefaultResponse.builder()
@@ -32,7 +33,7 @@ public class AdminUserController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUser(
             @PathVariable("id") Long userId,
-            @RequestBody User user )
+            @Validated @RequestBody UserDTO user )
     {
         iUserService.updateUser(userId, user);
         DefaultResponse response = DefaultResponse.builder()

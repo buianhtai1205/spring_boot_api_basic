@@ -1,12 +1,14 @@
 package com.dev.studyspringboot.controller;
 
 import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.OrderDTO;
 import com.dev.studyspringboot.model.Order;
 import com.dev.studyspringboot.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +22,7 @@ public class OrderController {
 
     @PostMapping("/create")
     public ResponseEntity<?> addOrder(
-            @RequestBody Order order )
+            @Validated @RequestBody OrderDTO order )
     {
         iOrderService.addOrder(order);
         DefaultResponse response = DefaultResponse.builder()
