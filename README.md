@@ -1626,6 +1626,79 @@ public ResponseEntity<DefaultResponse> handleException(Exception ex) {
 Đến đây thì mọi thứ chắc đã oke. Nếu sau này có exception khác thì mình sẽ config để trên
 exception này là mọi thứ hoạt động tốt.
 
+### Validation
+Trong phần này, ta sẽ tìm hiểu cách validate ở phía backend trong spring boot. 
+
+Ta đã handle các exception một cách cẫn thận trong service nên trong phần này
+ta sẽ validate các trường mà ta cho là không thể để trống.
+
+Bản thân mình sẽ ưu tiên và validate các field, các feature mà ở hướng user 
+nhiều hơn là bên admin.
+
+Ví dụ trong project này, mình sẽ validate tại `AuthRequest`(người dùng đăng nhập),
+`Order`(người dùng đặt hàng), `User`(người dùng đăng ký).
+
+Đầu tiên để sử dụng validation ta cần thêm vào pom
+```
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+```
+Tiếp theo ta vào `dto/AuthRequest` thêm Annotation cho hai trường ta muốn validate
+```
+public class AuthRequest {
+    @NotEmpty(message = "Username is EMPTY!")
+    private String username;
+    @NotEmpty(message = "Password is EMPTY!")
+    private String password;
+}
+```
+Ta truyền `message` ở đây để có thể get nó và trả về phía client nếu hai trường đó trống.
+
+Tiếp đến ta vào Controller mà ta muốn validate thêm từ annotation `@Validated` vào `AuthRequest`
+```
+@PostMapping("/authenticate")
+public ResponseEntity<?> authenticateAndGetJwt(@Validated @RequestBody AuthRequest authRequest )
+{
+    Authentication authentication = authenticationManager
+            .authenticate(new UsernamePasswordAuthenticationToken(
+            authRequest.getUsername(),
+            authRequest.getPassword()
+    ));
+    if (authentication.isAuthenticated()) {
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(authRequest.getUsername());
+        JwtResponse jwtResponse = JwtResponse.builder()
+                .accessToken(jwtService.generateToken(authRequest.getUsername()))
+                .token(refreshToken.getToken())
+                .build();
+        return ResponseEntity.ok(jwtResponse);
+    } else throw new RuntimeException("Internal Server Error");
+}
+```
+Khi ta thêm vaidate, nếu trong trường hợp AuthRequest không vượt qua được validate thì code sẽ không run
+bên trong hàm trên, Và nó sẽ trả ra một `BindException`.
+
+Phần exception mình đã trình bày ở trên, công việc của ta ngay lúc này đơn giản là vào `GlobalExceptionHandler`
+và config lại BindException.
+```
+// config exception validate
+@ExceptionHandler(BindException.class)
+public ResponseEntity<DefaultResponse> handleBindException(BindException ex) {
+    DefaultResponse response = DefaultResponse.builder()
+            .statusCode(HttpStatus.BAD_REQUEST.value())
+            .message(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage())
+            .build();
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+}
+```
+Mình đã thêm phần code này vào `GlobalExceptionHandler`, ờ đây mình trả về message là message mà ta 
+đã config trong `AuthRequest` ở trên, và mình sẽ trả về message đầu tiên. 
+
+Giả sử cả username vả password đều empty thì sẽ trả về message đầu tiên check được là `Username is EMPTY!`
+
+Tương tự mình làm với `OrderDTO` và `UserDTO`.
+
 ## Stage 4: Optimize Performance and Caching
 
 ## Stage 5: Testing and Logging

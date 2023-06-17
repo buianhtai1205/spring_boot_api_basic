@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-    //
+    // config exception validate
     @ExceptionHandler(BindException.class)
     public ResponseEntity<DefaultResponse> handleBindException(BindException ex) {
         DefaultResponse response = DefaultResponse.builder()
