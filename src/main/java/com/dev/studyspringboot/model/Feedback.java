@@ -12,8 +12,6 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 @Table(name = "feedbacks")
 public class Feedback {
     @Id

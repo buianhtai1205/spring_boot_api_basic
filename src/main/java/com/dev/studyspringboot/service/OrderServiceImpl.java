@@ -58,7 +58,11 @@ public class OrderServiceImpl implements IOrderService{
 
             if (existingOrder != null) {
                 ReflectionUtils.copyNonNullFields(order, existingOrder);
-                orderRepository.save(existingOrder);
+
+                if (existingOrder.getId().equals(orderId)) {
+                    orderRepository.save(existingOrder);
+                } else throw new RuntimeException("Has Error when edit request!");
+
             } else throw new ResourceNotFoundException("Order has id: " + orderId + " NOT exist!");
 
         } else throw new NullException("Order is null value!");

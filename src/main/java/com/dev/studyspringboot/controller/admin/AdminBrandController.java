@@ -19,7 +19,7 @@ public class AdminBrandController {
 
     @PostMapping("/create")
     public ResponseEntity<?> addBrand(
-            @Validated @RequestBody Brand brand )
+            @RequestBody Brand brand )
     {
         iBrandService.addBrand(brand);
         DefaultResponse response = DefaultResponse.builder()

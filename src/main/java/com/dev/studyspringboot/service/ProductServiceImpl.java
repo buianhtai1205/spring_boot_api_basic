@@ -37,7 +37,11 @@ public class ProductServiceImpl implements IProductService{
             Product existingProduct = productRepository.findByIdAndDeletedAtIsNull(productId);
             if (existingProduct != null) {
                 ReflectionUtils.copyNonNullFields(product, existingProduct);
-                productRepository.save(existingProduct);
+
+                if (existingProduct.getId().equals(productId)) {
+                    productRepository.save(existingProduct);
+                } else throw new RuntimeException("Has Error when edit request!");
+
             } else throw new ResourceNotFoundException("Product has id: " + productId + " NOT exist!");
         } else throw new NullException("Product is null value!");
     }

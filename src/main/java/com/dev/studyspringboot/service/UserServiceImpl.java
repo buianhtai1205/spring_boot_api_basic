@@ -36,7 +36,11 @@ public class UserServiceImpl implements IUserService{
             User existingUser = userRepository.findByIdAndDeletedAtIsNull(userId);
             if (existingUser != null) {
                 ReflectionUtils.copyNonNullFields(user, existingUser);
-                userRepository.save(existingUser);
+
+                if (existingUser.getId().equals(userId)) {
+                    userRepository.save(existingUser);
+                } else throw new RuntimeException("Has Error when edit request!");
+
             } else throw new ResourceNotFoundException("User has id: " + userId + " NOT exist!");
         } else throw new NullException("User is null value!");
     }

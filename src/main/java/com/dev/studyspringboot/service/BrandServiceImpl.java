@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class BrandServiceImpl implements IBrandService{
@@ -29,7 +31,11 @@ public class BrandServiceImpl implements IBrandService{
             Brand existingBrand = brandRepository.findByIdAndDeletedAtIsNull(brandId);
             if (existingBrand != null) {
                 ReflectionUtils.copyNonNullFields(brand, existingBrand);
-                brandRepository.save(existingBrand);
+
+                if (Objects.equals(existingBrand.getId(), brandId)) {
+                    brandRepository.save(existingBrand);
+                } else throw new RuntimeException("Has Error when edit request!");
+
             } else throw new ResourceNotFoundException("Brand has id: " + brandId + " NOT exist!");
         } else throw new NullException("Brand is null value!");
     }
@@ -52,7 +58,7 @@ public class BrandServiceImpl implements IBrandService{
     public Brand getOneBrand(Long brandId) {
         Brand brand = brandRepository.findByIdAndDeletedAtIsNull(brandId);
         if (brand != null) {
-            return brandRepository.findByIdAndDeletedAtIsNull(brandId);
+            return brand;
         } else throw new ResourceNotFoundException("Brand has id: " + brandId + " NOT exist!");
     }
 }

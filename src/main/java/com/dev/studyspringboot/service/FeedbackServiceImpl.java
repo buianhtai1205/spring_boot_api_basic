@@ -50,8 +50,13 @@ public class FeedbackServiceImpl implements IFeedbackService{
         if (feedback != null) {
             Feedback existingFeedback = feedbackRepository.findById(feedbackId)
                     .orElseThrow(() -> new ResourceNotFoundException("Feedback has id: " + feedbackId + " NOT exist!"));
+
             ReflectionUtils.copyNonNullFields(feedback, existingFeedback);
-            feedbackRepository.save(existingFeedback);
+
+            if (existingFeedback.getId().equals(feedbackId)) {
+                feedbackRepository.save(existingFeedback);
+            } else throw new RuntimeException("Has Error when edit request!");
+
         } else throw new NullException("Feedback is null value!");
     }
 
