@@ -7,6 +7,7 @@ import com.dev.studyspringboot.model.Product;
 import com.dev.studyspringboot.repository.BrandRepository;
 import com.dev.studyspringboot.repository.ProductRepository;
 import com.dev.studyspringboot.util.ReflectionUtils;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,11 +56,13 @@ public class ProductServiceImpl implements IProductService{
         } else throw new ResourceNotFoundException("Product has id: " + productId + " NOT exist!");
     }
 
+    @Observed(name = "get.products")
     @Override
     public List<Product> getAllProduct() {
         return productRepository.findAllByDeletedAtIsNull();
     }
 
+    @Observed(name = "get.product")
     @Override
     public Product getOneProduct(Long productId) {
         Product product = productRepository.findByIdAndDeletedAtIsNull(productId);
