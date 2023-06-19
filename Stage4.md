@@ -144,5 +144,10 @@ Ta sẽ thêm name để khi log trên console ta biết đó là log của meth
 Ta sẽ test với Postman và đây là thông tin hiện trong console
 ```
 c.d.s.aspect.PerformanceTrackerHandler   : execution started get.products
-c.d.s.aspect.PerformanceTrackerHandler   : execution stopped spring.security.http.secured.requests duration 165
+c.d.s.aspect.PerformanceTrackerHandler   : execution stopped get.products duration 71
+```
+
+```
+c.d.s.aspect.PerformanceTrackerHandler   : execution started get.product
+c.d.s.aspect.PerformanceTrackerHandler   : execution stopped get.product duration 22
 ```
