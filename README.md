@@ -38,3 +38,7 @@ tối ưu hóa tốc độ.
 ## Stage 5: Testing and Logging
 
 ## Stage 6: Spring Cloud
+
+## Others
+- OpenAI - Swagger UI: [Link chi tiết](SwaggerUI.md) 
+- Upload and Download FIle: 
