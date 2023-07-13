@@ -35,7 +35,11 @@ public class FileData {
 ```
 Sau đó lần lượt tạo repository, service, controller tương tự như các phần trước.
 
+Link tham khảo: https://www.youtube.com/watch?v=XUL60-Ke-L8
 
 ### Save File in Directory/Folder
+Tương tự cách trên
+
+Link tham khảo: https://www.youtube.com/watch?v=7L1BSy5pnGo
 
 ### Save File in AWS S3
