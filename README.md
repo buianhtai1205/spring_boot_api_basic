@@ -41,4 +41,4 @@ tối ưu hóa tốc độ.
 
 ## Others
 - OpenAI - Swagger UI: [Link chi tiết](SwaggerUI.md) 
-- Upload and Download FIle: 
+- Upload and Download FIle: [Link chi tiết](UploadAndDownloadFile.md) 
