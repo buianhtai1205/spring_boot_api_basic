@@ -1,9 +1,10 @@
 package com.dev.studyspringboot.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.util.Objects;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -45,5 +46,15 @@ public class FileUtils {
             throw new RuntimeException(e);
         }
         return outputStream.toByteArray();
+    }
+
+    public static File convertMultipartFileToFile(MultipartFile file) {
+        File convertedFile = new File(Objects.requireNonNull(file.getOriginalFilename()));
+        try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
+            fos.write(file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return convertedFile;
     }
 }

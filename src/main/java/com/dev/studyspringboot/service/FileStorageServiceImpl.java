@@ -1,5 +1,10 @@
 package com.dev.studyspringboot.service;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.util.IOUtils;
 import com.dev.studyspringboot.model.FileData;
 import com.dev.studyspringboot.model.FileStorage;
 import com.dev.studyspringboot.repository.FileDataRepository;
@@ -20,7 +25,10 @@ public class FileStorageServiceImpl implements IFileStorageService{
     private FileDataRepository fileDataRepository;
     @Autowired
     private FileStorageRepository fileStorageRepository;
+    @Autowired
+    private AmazonS3 s3Client;
     private final String FOLDER_PATH = "D:\\Img-Background\\FILE_STORAGE\\";
+    private final String bucketName = "ryofilestorage";
 
     @Override
     public void uploadFileToDatabase(MultipartFile file) throws IOException {
@@ -54,5 +62,29 @@ public class FileStorageServiceImpl implements IFileStorageService{
         Optional<FileStorage> fileStorage = fileStorageRepository.findByName(fileName);
         String filePath = fileStorage.get().getFilePath();
         return Files.readAllBytes(new File(filePath).toPath());
+    }
+
+    @Override
+    public String uploadFileToAWSS3(MultipartFile file) {
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        File fileObj = FileUtils.convertMultipartFileToFile(file);
+        s3Client.putObject(new PutObjectRequest(
+                bucketName,
+                fileName,
+                fileObj
+        ));
+        fileObj.delete();
+        return fileName;
+    }
+
+    @Override
+    public byte[] downloadFileFromAWSS3(String fileName) {
+        S3Object s3Object = s3Client.getObject(bucketName, fileName);
+        S3ObjectInputStream inputStream = s3Object.getObjectContent();
+        try {
+            return IOUtils.toByteArray(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

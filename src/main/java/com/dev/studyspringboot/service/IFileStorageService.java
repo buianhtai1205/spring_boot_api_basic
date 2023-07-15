@@ -9,4 +9,6 @@ public interface IFileStorageService {
     byte[] downloadFileFromDatabase(String fileName);
     void uploadFileToSystem(MultipartFile file) throws IOException;
     byte[] downloadFileFromSystem(String fileName) throws IOException;
+    String uploadFileToAWSS3(MultipartFile file);
+    byte[] downloadFileFromAWSS3(String fileName);
 }
