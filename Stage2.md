@@ -953,3 +953,46 @@ trong table refresh_token không, và kiểm tra expirydate của nó. Sau đó 
 tạo lại jwt và gừi về front-end.
 
 ![img.png](images/img_10.png)
+
+### Oauth2, Login with microsoft azure
+
+Tài liệu tham khảo lấy key: https://learn.microsoft.com/en-us/azure/developer/java/spring-framework/configure-spring-boot-starter-java-app-with-azure-active-directory
+
+Đầu tiên ta sẽ thêm dependence oauth2 và azure vào pom 
+```
+<dependencyManagement>
+	<dependencies>
+		<dependency>
+			<groupId>com.azure.spring</groupId>
+			<artifactId>spring-cloud-azure-dependencies</artifactId>
+			<version>5.3.0</version>
+			<type>pom</type>
+			<scope>import</scope>
+		</dependency>
+	</dependencies>
+</dependencyManagement>
+```
+```
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-oauth2-client</artifactId>
+</dependency>
+<dependency>
+	<groupId>com.azure.spring</groupId>
+	<artifactId>spring-cloud-azure-starter-active-directory</artifactId>
+</dependency>
+```
+
+Sau đó ta cần config các key theo như hướng dẫn ở link trên vào application.properties:
+```
+# Enable related features.
+spring.cloud.azure.active-directory.enabled=true
+# Specifies your Active Directory ID:
+spring.cloud.azure.active-directory.profile.tenant-id=22222222-2222-2222-2222-222222222222
+# Specifies your App Registration's Application ID:
+spring.cloud.azure.active-directory.credential.client-id=11111111-1111-1111-1111-1111111111111111
+# Specifies your App Registration's secret key:
+spring.cloud.azure.active-directory.credential.client-secret=AbCdEfGhIjKlMnOpQrStUvWxYz==
+```
+
+Sau đó ta tạo api login và test, Lưu ý nên tắt các security đã config ở những bài trước như spring security, jwt,...
