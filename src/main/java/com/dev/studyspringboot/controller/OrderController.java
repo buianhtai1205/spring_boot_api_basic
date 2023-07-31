@@ -1,6 +1,6 @@
 package com.dev.studyspringboot.controller;
 
-import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.ApiResponse;
 import com.dev.studyspringboot.dto.OrderDTO;
 import com.dev.studyspringboot.model.Order;
 import com.dev.studyspringboot.service.IOrderService;
@@ -25,7 +25,7 @@ public class OrderController {
             @Validated @RequestBody OrderDTO order )
     {
         iOrderService.addOrder(order);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message("Order created successfully")
                 .build();
@@ -37,7 +37,7 @@ public class OrderController {
             @PathVariable("id") Long orderId )
     {
         iOrderService.deteleOrder(orderId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Order deleted successfully")
                 .build();
@@ -47,7 +47,7 @@ public class OrderController {
     @GetMapping("/")
     public ResponseEntity<?> getAllOrder() {
         List<Order> orders = iOrderService.getAllOrder();
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get list order successfully")
                 .data(orders)
@@ -60,7 +60,7 @@ public class OrderController {
             @PathVariable("id") Long orderId )
     {
         Order order = iOrderService.getOneOrder(orderId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get order successfully")
                 .data(order)

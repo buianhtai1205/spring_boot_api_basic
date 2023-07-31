@@ -1,6 +1,6 @@
 package com.dev.studyspringboot.controller.admin;
 
-import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.ApiResponse;
 import com.dev.studyspringboot.dto.UserDTO;
 import com.dev.studyspringboot.model.User;
 import com.dev.studyspringboot.service.IUserService;
@@ -23,7 +23,7 @@ public class AdminUserController {
             @Validated @RequestBody UserDTO user )
     {
         iUserService.addUser(user);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message("User created successfully")
                 .build();
@@ -36,7 +36,7 @@ public class AdminUserController {
             @Validated @RequestBody UserDTO user )
     {
         iUserService.updateUser(userId, user);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("User updated successfully")
                 .build();
@@ -48,7 +48,7 @@ public class AdminUserController {
             @PathVariable("id") Long userId )
     {
         iUserService.deleteUser(userId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("User deleted successfully")
                 .build();
@@ -59,7 +59,7 @@ public class AdminUserController {
     public ResponseEntity<?> getAllUser()
     {
         List<User> users = iUserService.getAllUser();
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get list user successfully")
                 .data(users)
@@ -72,7 +72,7 @@ public class AdminUserController {
             @PathVariable("id") Long userId )
     {
         User user = iUserService.getOneUser(userId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get user successfully")
                 .data(user)

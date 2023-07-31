@@ -1,6 +1,6 @@
 package com.dev.studyspringboot.exception;
 
-import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.ApiResponse;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,45 +12,45 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(NullException.class)
-    public ResponseEntity<DefaultResponse> handleNullException(NullException ex) {
-        DefaultResponse defaultResponse = DefaultResponse.builder()
+    public ResponseEntity<ApiResponse> handleNullException(NullException ex) {
+        ApiResponse apiResponse = ApiResponse.builder()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .message(ex.getMessage())
                 .build();
-        return ResponseEntity.badRequest().body(defaultResponse);
+        return ResponseEntity.badRequest().body(apiResponse);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<DefaultResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        DefaultResponse defaultResponse = DefaultResponse.builder()
+    public ResponseEntity<ApiResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        ApiResponse apiResponse = ApiResponse.builder()
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .message(ex.getMessage())
                 .build();
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(defaultResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
     }
 
     @ExceptionHandler(DuplicateKeyException.class)
-    public ResponseEntity<DefaultResponse> handleDuplicateKeyException(DuplicateKeyException ex) {
-        DefaultResponse defaultResponse = DefaultResponse.builder()
+    public ResponseEntity<ApiResponse> handleDuplicateKeyException(DuplicateKeyException ex) {
+        ApiResponse apiResponse = ApiResponse.builder()
                 .statusCode(HttpStatus.CONFLICT.value())
                 .message(ex.getMessage())
                 .build();
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(defaultResponse);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiResponse);
     }
 
     @ExceptionHandler(WarningException.class)
-    public ResponseEntity<DefaultResponse> handleWarningException(WarningException ex) {
-        DefaultResponse defaultResponse = DefaultResponse.builder()
+    public ResponseEntity<ApiResponse> handleWarningException(WarningException ex) {
+        ApiResponse apiResponse = ApiResponse.builder()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .message(ex.getMessage())
                 .build();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(defaultResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
     }
 
     // Handle BadCredentialsException return DefaultResponse
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<DefaultResponse> handleBadCredentialsException(BadCredentialsException ex) {
-        DefaultResponse response = DefaultResponse.builder()
+    public ResponseEntity<ApiResponse> handleBadCredentialsException(BadCredentialsException ex) {
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.UNAUTHORIZED.value())
                 .message(ex.getMessage())
                 .build();
@@ -59,8 +59,8 @@ public class GlobalExceptionHandler {
 
     // config exception validate
     @ExceptionHandler(BindException.class)
-    public ResponseEntity<DefaultResponse> handleBindException(BindException ex) {
-        DefaultResponse response = DefaultResponse.builder()
+    public ResponseEntity<ApiResponse> handleBindException(BindException ex) {
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .message(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage())
                 .build();
@@ -70,8 +70,8 @@ public class GlobalExceptionHandler {
 
     // Handle others exception not define
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<DefaultResponse> handleException(Exception ex) {
-        DefaultResponse response = DefaultResponse.builder()
+    public ResponseEntity<ApiResponse> handleException(Exception ex) {
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(500)
                 .message(ex.getMessage())
                 .build();

@@ -1,6 +1,6 @@
 package com.dev.studyspringboot.controller.admin;
 
-import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.ApiResponse;
 import com.dev.studyspringboot.model.Product;
 import com.dev.studyspringboot.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class AdminProductController {
             @Validated @RequestBody Product product )
     {
         iProductService.addProduct(product);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message("Product created successfully")
                 .build();
@@ -35,7 +35,7 @@ public class AdminProductController {
             @RequestBody Product product )
     {
         iProductService.updateProduct(productId, product);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message("Product updated successfully")
                 .build();
@@ -47,7 +47,7 @@ public class AdminProductController {
             @PathVariable("id") Long productId )
     {
         iProductService.deleteProduct(productId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message("Product deleted successfully")
                 .build();
@@ -58,7 +58,7 @@ public class AdminProductController {
     public ResponseEntity<?> getAllProduct()
     {
         List<Product> products = iProductService.getAllProduct();
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message("Get list product successfully")
                 .data(products)
@@ -71,7 +71,7 @@ public class AdminProductController {
             @PathVariable("id") Long productId )
     {
         Product product = iProductService.getOneProduct(productId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message("Get list product successfully")
                 .data(product)

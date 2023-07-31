@@ -1,6 +1,6 @@
 package com.dev.studyspringboot.controller;
 
-import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.ApiResponse;
 import com.dev.studyspringboot.service.IFileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -25,7 +25,7 @@ public class FileStorageController {
             @RequestParam("file")MultipartFile file
             ) throws IOException {
         fileStorageService.uploadFileToDatabase(file);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("File uploaded successful")
                 .build();
@@ -47,7 +47,7 @@ public class FileStorageController {
             @RequestParam("file")MultipartFile file
     ) throws IOException {
         fileStorageService.uploadFileToSystem(file);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("File uploaded successful")
                 .build();
@@ -69,7 +69,7 @@ public class FileStorageController {
             @RequestParam("file")MultipartFile file
     ) {
         String fileName = fileStorageService.uploadFileToAWSS3(file);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("File uploaded successful: " + fileName)
                 .build();

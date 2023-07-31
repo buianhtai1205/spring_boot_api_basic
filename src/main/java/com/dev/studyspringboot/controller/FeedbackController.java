@@ -1,6 +1,6 @@
 package com.dev.studyspringboot.controller;
 
-import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.ApiResponse;
 import com.dev.studyspringboot.model.Feedback;
 import com.dev.studyspringboot.model.OrderProduct;
 import com.dev.studyspringboot.service.IFeedbackService;
@@ -31,7 +31,7 @@ public class FeedbackController {
         iFeedbackService.addFeedback(
                 feedbackAndOrderProduct.feedback(),
                 feedbackAndOrderProduct.orderProduct() );
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message("Feedback created successfully")
                 .build();
@@ -45,7 +45,7 @@ public class FeedbackController {
             @RequestBody Feedback feedback )
     {
         iFeedbackService.updateFeedback(feedbackId, feedback);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Feedback updated successfully")
                 .build();
@@ -58,7 +58,7 @@ public class FeedbackController {
             @PathVariable("id") Long feedbackId )
     {
         iFeedbackService.deleteFeedback(feedbackId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Feedback deleted successfully")
                 .build();
@@ -70,7 +70,7 @@ public class FeedbackController {
     public ResponseEntity<?> getAllFeedback()
     {
         List<Feedback> feedbacks = iFeedbackService.getAllFeedback();
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get list feedback successfully")
                 .data(feedbacks)
@@ -84,7 +84,7 @@ public class FeedbackController {
             @PathVariable("id") Long feedbackId )
     {
         Feedback feedback = iFeedbackService.getOneFeedback(feedbackId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get feedback successfully")
                 .data(feedback)
@@ -98,7 +98,7 @@ public class FeedbackController {
             @PathVariable("id") Long productId )
     {
         List<Feedback> feedbacks = iFeedbackService.getAllFeedbackOfProduct(productId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get list feedback of product successfully")
                 .data(feedbacks)

@@ -93,38 +93,38 @@ Giờ ta tiến hành custom lại GlobalExceptionHandler của chúng ta
 public class GlobalExceptionHandler {
     @ExceptionHandler(NullException.class)
     public ResponseEntity<DefaultResponse> handleNullException(NullException ex) {
-        DefaultResponse defaultResponse = DefaultResponse.builder()
+        DefaultResponse apiResponse = DefaultResponse.builder()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .message(ex.getMessage())
                 .build();
-        return ResponseEntity.badRequest().body(defaultResponse);
+        return ResponseEntity.badRequest().body(apiResponse);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<DefaultResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        DefaultResponse defaultResponse = DefaultResponse.builder()
+        DefaultResponse apiResponse = DefaultResponse.builder()
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .message(ex.getMessage())
                 .build();
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(defaultResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
     }
 
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<DefaultResponse> handleDuplicateKeyException(DuplicateKeyException ex) {
-        DefaultResponse defaultResponse = DefaultResponse.builder()
+        DefaultResponse apiResponse = DefaultResponse.builder()
                 .statusCode(HttpStatus.CONFLICT.value())
                 .message(ex.getMessage())
                 .build();
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(defaultResponse);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiResponse);
     }
 
     @ExceptionHandler(WarningException.class)
     public ResponseEntity<DefaultResponse> handleWarningException(WarningException ex) {
-        DefaultResponse defaultResponse = DefaultResponse.builder()
+        DefaultResponse apiResponse = DefaultResponse.builder()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .message(ex.getMessage())
                 .build();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(defaultResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
     }
 }
 ```

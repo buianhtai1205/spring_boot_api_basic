@@ -1,9 +1,11 @@
 package com.dev.studyspringboot.service;
 
+import com.dev.studyspringboot.converter.BrandMapper;
 import com.dev.studyspringboot.exception.NullException;
 import com.dev.studyspringboot.exception.ResourceNotFoundException;
 import com.dev.studyspringboot.model.Brand;
 import com.dev.studyspringboot.repository.BrandRepository;
+import com.dev.studyspringboot.response.brand.BrandResponse;
 import com.dev.studyspringboot.util.ReflectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,8 +17,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class BrandServiceImpl implements IBrandService{
+
     @Autowired
     private BrandRepository brandRepository;
+
+    @Autowired
+    private BrandMapper brandMapper;
 
     @Override
     public void addBrand(Brand brand) {
@@ -60,5 +66,13 @@ public class BrandServiceImpl implements IBrandService{
         if (brand != null) {
             return brand;
         } else throw new ResourceNotFoundException("Brand has id: " + brandId + " NOT exist!");
+    }
+
+    @Override
+    public List<BrandResponse> getBrands() {
+        List<Brand> brands = brandRepository.findAllByDeletedAtIsNull();
+        return brands.stream()
+                .map(brand -> brandMapper.brandToBrandResponse(brand))
+                .collect(Collectors.toList());
     }
 }

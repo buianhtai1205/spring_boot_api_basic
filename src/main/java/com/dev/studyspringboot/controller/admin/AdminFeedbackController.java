@@ -1,6 +1,6 @@
 package com.dev.studyspringboot.controller.admin;
 
-import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.ApiResponse;
 import com.dev.studyspringboot.model.Feedback;
 import com.dev.studyspringboot.service.IFeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ public class AdminFeedbackController {
             @PathVariable("id") Long feedbackId )
     {
         iFeedbackService.deleteFeedback(feedbackId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Feedback deleted successfully")
                 .build();
@@ -32,7 +32,7 @@ public class AdminFeedbackController {
     public ResponseEntity<?> getAllFeedback()
     {
         List<Feedback> feedbacks = iFeedbackService.getAllFeedback();
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get list feedback successfully")
                 .data(feedbacks)
@@ -45,7 +45,7 @@ public class AdminFeedbackController {
             @PathVariable("id") Long feedbackId )
     {
         Feedback feedback = iFeedbackService.getOneFeedback(feedbackId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get feedback successfully")
                 .data(feedback)

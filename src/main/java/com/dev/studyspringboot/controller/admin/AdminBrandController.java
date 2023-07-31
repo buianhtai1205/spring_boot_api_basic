@@ -1,12 +1,11 @@
 package com.dev.studyspringboot.controller.admin;
 
-import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.ApiResponse;
 import com.dev.studyspringboot.model.Brand;
 import com.dev.studyspringboot.service.IBrandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +21,7 @@ public class AdminBrandController {
             @RequestBody Brand brand )
     {
         iBrandService.addBrand(brand);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message("Brand created successfully")
                 .build();
@@ -35,7 +34,7 @@ public class AdminBrandController {
             @RequestBody Brand brand )
     {
         iBrandService.updateBrand(brandId, brand);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Brand updated successfully")
                 .build();
@@ -47,7 +46,7 @@ public class AdminBrandController {
             @PathVariable("id") Long brandId )
     {
         iBrandService.deleteBrand(brandId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Brand deleted successfully")
                 .build();
@@ -58,7 +57,7 @@ public class AdminBrandController {
     public ResponseEntity<?> getAllBrand()
     {
         List<Brand> brands = iBrandService.getAllBrand();
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get list brand successfully")
                 .data(brands)
@@ -71,7 +70,7 @@ public class AdminBrandController {
             @PathVariable("id") Long brandId )
     {
         Brand brand = iBrandService.getOneBrand(brandId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get brand successfully")
                 .data(brand)

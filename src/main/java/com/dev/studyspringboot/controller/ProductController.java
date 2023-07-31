@@ -1,6 +1,6 @@
 package com.dev.studyspringboot.controller;
 
-import com.dev.studyspringboot.dto.DefaultResponse;
+import com.dev.studyspringboot.dto.ApiResponse;
 import com.dev.studyspringboot.model.Product;
 import com.dev.studyspringboot.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class ProductController {
     public ResponseEntity<?> getAllProduct()
     {
         List<Product> products = iProductService.getAllProduct();
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get list product successfully")
                 .data(products)
@@ -36,7 +36,7 @@ public class ProductController {
             @PathVariable("id") Long productId )
     {
         Product product = iProductService.getOneProduct(productId);
-        DefaultResponse response = DefaultResponse.builder()
+        ApiResponse response = ApiResponse.builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Get product successfully")
                 .data(product)
