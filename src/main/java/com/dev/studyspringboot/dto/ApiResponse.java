@@ -12,14 +12,11 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ApiResponse<T> {
-    private int statusCode;
-    private String message;
-    private T data;
+public class ApiResponse {
 
-    public ApiResponse(T data) {
-        this.statusCode = 200;
-        this.message = "Requested successfully";
-        this.data = data;
-    }
+    private int statusCode;
+
+    private String message;
+
+    private Object data;
 }
