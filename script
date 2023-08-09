@@ -1,0 +1,3 @@
+CREATE USER 'buianhtai'@'%' IDENTIFIED BY 'password123_DONG';
+GRANT ALL PRIVILEGES ON studyspring.* TO 'buianhtai'@'%';
+FLUSH PRIVILEGES;
