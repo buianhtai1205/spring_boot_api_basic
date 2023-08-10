@@ -37,9 +37,9 @@ pipeline {
                 sh 'echo y | docker container prune '
                 sh 'docker volume rm buianhtai-mysql-data || echo "no volume"'
 
-                sh "docker run --name buianhtai-mysql --rm --network dev -v buianhtai-mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_LOGIN} -e MYSQL_DATABASE=studyspring  -d mysql:8.0 "
+                sh "docker run --name buianhtai-mysql --rm --network dev -v buianhtai-mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_LOGIN_PSW} -e MYSQL_DATABASE=studyspring  -d mysql:8.0 "
                 sh 'sleep 20'
-                sh "docker exec -i buianhtai-mysql mysql --user=root --password=${MYSQL_ROOT_LOGIN} < script"
+                sh "docker exec -i buianhtai-mysql mysql --user=root --password=${MYSQL_ROOT_LOGIN_PSW} < script"
             }
         }
 
